@@ -1,66 +1,38 @@
-# Model_Router
 
-An intelligent AI router that automatically selects the best model and instruction for your specific task.
+## Project Overview
 
-## Features
+The Model Router is a Python-based tool that solves a key problem for businesses using AI: how to efficiently and effectively leverage the ever-growing ecosystem of Large Language Models (LLMs).
 
-- **Smart Task Classification**: Automatically categorizes your request into the most appropriate task category
-- **Instruction Selection**: Chooses the best instruction prompt for your specific task type
-- **Model Optimization**: Routes to the best-performing model for each task category
-- **Multiple AI Providers**: Supports OpenAI, Anthropic, and Google models
+Instead of being locked into a single provider or using a powerful, expensive model for every task, this router analyzes a user's request and dynamically routes it to the most suitable model from OpenAI, Anthropic, or Google, using a specialized, task-specific instruction to ensure the highest quality output.
 
-## Setup
+## How to Run and Test the Demo
 
-### 1. Install Dependencies
+### 1. Setup
 
+**Install Dependencies:**
 ```bash
-pip install -r requirements.txt
-```
+pip install -r requirements.txt```
 
-### 2. Set Up API Keys
-
-Create a `.env` file in the project root with your API keys:
-
+**Set Up API Keys:**
+Create a `.env` file in the project root. You can copy the template provided:
 ```bash
-# Copy the template
 cp env_template.txt .env
-
-# Edit the .env file with your actual API keys
 ```
+Now, add your API keys for OpenAI, Anthropic, and Google to the `.env` file. The application will warn you if a key is missing, but it will still run if you only want to test models from a provider you have a key for.
 
-Add your API keys to the `.env` file:
+### 2. Usage
 
-```env
-OPENAI_API_KEY=your_openai_api_key_here
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-GOOGLE_API_KEY=your_google_api_key_here
-```
-
-### 3. Get API Keys
-
-- **OpenAI**: https://platform.openai.com/api-keys
-- **Anthropic**: https://console.anthropic.com/
-- **Google**: https://makersuite.google.com/app/apikey
-
-## Usage
-
-Run the router:
-
+Run the interactive command-line application:
 ```bash
 python main.py
 ```
 
-The system will:
-1. Analyze your request and select the best task category
-2. Choose the most appropriate instruction for that category
-3. Route to the optimal model for your task
+The application starts in a continuous conversation mode. Simply type your prompt and the router will:
+1.  Analyze your request to select the best task category.
+2.  Choose the most appropriate instruction for that category.
+3.  Route to the optimal model for the task.
+4.  Stream the response to the console.
 
-## Task Categories
+You can type `clear` to reset the conversation history or `quit` to exit.
 
-- **Professional Coding**: Web development, data science, system architecture
-- **Advanced Reasoning**: Mathematical, scientific, philosophical problems
-- **Fast Reasoning**: Quick math, logic puzzles, decision making
-- **Creative Writing**: Poetry, storytelling, copywriting, scriptwriting
-- **General QA**: Educational, research, practical advice
-- **Fast Simple Task**: Summarization, translation, formatting
-- **Conversational AI**: Casual chat, therapeutic, entertainment
+*Note on LLM Usage:* I have leveraged Google's Gemini to accelerate aspects on development for writing boilerplate code and generating documentation.
