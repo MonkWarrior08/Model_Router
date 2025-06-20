@@ -4,7 +4,7 @@ import openai
 import anthropic
 import google.generativeai as genai
 from dotenv import load_dotenv
-from Demo_code.router import choose_model
+from router import choose_model
 
 # Load environment variables from .env file
 load_dotenv()
@@ -140,8 +140,8 @@ def execute_gemini(prompt: str, conversation_history: list, model_name: str = "g
 def main():
     """An intelligent AI router that selects the best model for your task."""
     
-    print("🤖 AI Model Router - Continuous Conversation Mode")
-    print("Type 'quit', 'exit', or 'bye' to end the conversation.")
+    print("🤖 AI Model Router")
+    print("Type 'quit' to end the conversation.")
     print("Type 'clear' to clear conversation history.\n")
     
     # Initialize conversation history
@@ -152,14 +152,14 @@ def main():
         prompt = input("User: ")
         
         # Check for exit commands
-        if prompt.lower() in ['quit', 'exit', 'bye', 'q']:
-            print("👋 Goodbye! Thanks for chatting!")
+        if prompt.lower() in ['quit']:
+            print("Ending conversation...")
             break
         
         # Check for clear command
         if prompt.lower() == 'clear':
             conversation_history = []
-            print("🧹 Conversation history cleared!")
+            print("History cleared")
             continue
         
         # Skip empty inputs
