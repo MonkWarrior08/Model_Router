@@ -10,7 +10,7 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Load our benchmark data
-with open('benchmarks.json', 'r') as f:
+with open('model&prompt.json', 'r') as f:
     BENCHMARKS = json.load(f)
 
 TASK_CATEGORIES = list(BENCHMARKS.keys())
