@@ -11,7 +11,8 @@ Instead of being locked into a single provider or using a powerful, expensive mo
 
 **Install Dependencies:**
 ```bash
-pip install -r requirements.txt```
+pip install -r requirements.txt
+```
 
 **Set Up API Keys:**
 Create a `.env` file in the project root. You can copy the template provided:
