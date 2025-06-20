@@ -1,0 +1,44 @@
+{
+  "professional_coding": {
+    "provider": "gemini",
+    "model": "gemini-2.5-pro",
+    "temperature": 0.3,
+    "rationale": "Current leader on multiple coding benchmarks (WebDev Arena, Aider) for its ability to handle complex codebases and refactoring tasks. [18, 24]"
+  },
+  "advanced_reasoning": {
+    "provider": "claude",
+    "model": "claude-sonnet-4-20250514",
+    "temperature": 0.4,
+    "rationale": "Excels at sustained, long-running tasks and complex problem-solving, making it ideal for frontier agentic products. [4, 20]"
+  },
+  "fast_reasoning": {
+    "provider": "openai",
+    "model": "o4-mini-2025-04-16",
+    "temperature": 0.3,
+    "rationale": "A smaller, cost-effective model optimized for fast reasoning. It outperforms many larger models in math, coding, and visual tasks. [17, 19]"
+  },
+  "creative_writing": {
+    "provider": "claude",
+    "model": "claude-sonnet-4-20250514",
+    "temperature": 1.2,
+    "rationale": "Continues Anthropic's leadership in producing sophisticated, human-like, and steerable prose for high-quality content generation. [4]"
+  },
+  "general_qa": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "temperature": 0.5,
+    "rationale": "Remains a top-tier, extremely fast, and highly capable all-rounder, particularly strong in voice and vision tasks. [1, 6]"
+  },
+  "fast_simple_task": {
+    "provider": "gemini",
+    "model": "gemini-2.0-flash",
+    "temperature": 0.4,
+    "rationale": "The best model for price-performance, offering well-rounded capabilities for high-throughput, low-latency tasks. [21, 25]"
+  },
+  "conversational_ai": {
+    "provider": "claude",
+    "model": "gemini-2.0-flash-lite-preview-02-05",
+    "temperature": 1.0,
+    "rationale": "Best for witty, engaging dialogue that requires access to real-time information and a unique personality. [28]"
+  }
+}
