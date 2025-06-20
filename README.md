@@ -1,7 +1,7 @@
 
 ## Project Overview
 
-The Model Router is a Python-based tool that solves a key problem for businesses using AI: how to efficiently and effectively leverage the ever-growing ecosystem of Large Language Models (LLMs).
+Model Router is a Python-based tool that solves a key problem for businesses using AI: how to efficiently and effectively leverage the ever-growing ecosystem of Large Language Models (LLMs).
 
 Instead of being locked into a single provider or using a powerful, expensive model for every task, this router analyzes a user's request and dynamically routes it to the most suitable model from OpenAI, Anthropic, or Google, using a specialized, task-specific instruction to ensure the highest quality output.
 
