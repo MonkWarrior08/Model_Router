@@ -130,17 +130,24 @@ def main():
         if not prompt.strip():
             continue
         
-        # 1. Let the router AI choose the best model provider
-        model_info = choose_model(prompt)
-
-        # 2. A simple 'factory' to call the correct execution function
+        # 1. Let the router AI choose the best model provider and get its instruction
+        router_result = choose_model(prompt)
+        model_info = router_result["model_info"]
+        instruction = router_result["instruction"]
+        category = router_result["category"]
+        instruction_subtype = router_result["instruction_subtype"]
+        
+        # Combine the instruction with the user's prompt
+        full_prompt = f"{instruction}\n\nUser: {prompt}"
+        
+        # 2. A simple 'factory' to call the correct execution function with the full prompt
         ai_response = ""
         if model_info["provider"] == "openai":
-            ai_response = execute_openai(prompt, conversation_history, model_info["model"], model_info["temperature"])
+            ai_response = execute_openai(full_prompt, conversation_history, model_info["model"], model_info["temperature"])
         elif model_info["provider"] == "claude":
-            ai_response = execute_claude(prompt, conversation_history, model_info["model"], model_info["temperature"])
+            ai_response = execute_claude(full_prompt, conversation_history, model_info["model"], model_info["temperature"])
         elif model_info["provider"] == "gemini":
-            ai_response = execute_gemini(prompt, conversation_history, model_info["model"], model_info["temperature"])
+            ai_response = execute_gemini(full_prompt, conversation_history, model_info["model"], model_info["temperature"])
         else:
             print(f"Error: Unknown model provider '{model_info['provider']}'.")
         
