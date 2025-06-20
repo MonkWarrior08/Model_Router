@@ -10,3 +10,4 @@ __pycache__/
 *.pyzwz
 .gitignore
 .DS_Store
+__pycache__/
