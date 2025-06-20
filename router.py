@@ -67,6 +67,7 @@ def categorize_task_and_instruction(prompt: str) -> dict:
 def select_instruction_for_category(category: str, prompt: str) -> str:
     """
     Selects the appropriate instruction for the given category based on prompt content.
+    Now simplified to choose between 'default' and one specialized instruction per category.
     """
     category_info = BENCHMARKS[category]
     instructions = category_info["instructions"]
@@ -75,74 +76,51 @@ def select_instruction_for_category(category: str, prompt: str) -> str:
     
     # Select instruction based on category and prompt content
     if category == "creative_writing":
-        if any(word in prompt_lower for word in ["poem", "poetry", "verse", "rhyme", "sonnet", "haiku"]):
-            return "poetry"
-        elif any(word in prompt_lower for word in ["story", "narrative", "tale", "fiction", "novel", "plot"]):
+        # Check for storytelling-specific keywords
+        if any(word in prompt_lower for word in ["story", "narrative", "tale", "fiction", "novel", "plot", "character", "world", "dialogue"]):
             return "storytelling"
-        elif any(word in prompt_lower for word in ["copy", "marketing", "advertisement", "persuasive", "sales"]):
-            return "copywriting"
-        elif any(word in prompt_lower for word in ["script", "screenplay", "dialogue", "scene", "film", "theater"]):
-            return "scriptwriting"
         else:
             return "default"
     
     elif category == "professional_coding":
-        if any(word in prompt_lower for word in ["web", "html", "css", "javascript", "frontend", "website"]):
+        # Check for web development-specific keywords
+        if any(word in prompt_lower for word in ["web", "html", "css", "javascript", "frontend", "website", "react", "node", "responsive", "ui", "ux"]):
             return "web_development"
-        elif any(word in prompt_lower for word in ["data", "machine learning", "ml", "ai", "statistics", "analysis"]):
-            return "data_science"
-        elif any(word in prompt_lower for word in ["architecture", "system", "microservices", "cloud", "infrastructure"]):
-            return "system_architecture"
         else:
             return "default"
     
     elif category == "advanced_reasoning":
-        if any(word in prompt_lower for word in ["math", "mathematical", "equation", "calculation", "proof"]):
+        # Check for mathematical reasoning with LaTeX formatting
+        if any(word in prompt_lower for word in ["math", "mathematical", "equation", "calculation", "proof", "solve", "formula", "theorem", "algebra", "calculus", "geometry"]):
             return "mathematical"
-        elif any(word in prompt_lower for word in ["science", "scientific", "experiment", "hypothesis", "research"]):
-            return "scientific"
-        elif any(word in prompt_lower for word in ["philosophy", "philosophical", "ethics", "logic", "argument"]):
-            return "philosophical"
         else:
             return "default"
     
     elif category == "fast_reasoning":
-        if any(word in prompt_lower for word in ["math", "calculation", "number", "equation"]):
-            return "quick_math"
-        elif any(word in prompt_lower for word in ["puzzle", "riddle", "logic", "brain teaser"]):
-            return "logic_puzzles"
-        elif any(word in prompt_lower for word in ["decision", "choose", "option", "recommend"]):
-            return "decision_making"
+        # Check for decision analysis keywords
+        if any(word in prompt_lower for word in ["decision", "choose", "option", "recommend", "analysis", "compare", "evaluate", "select", "best", "trade-off"]):
+            return "decision_analysis"
         else:
             return "default"
     
     elif category == "general_qa":
-        if any(word in prompt_lower for word in ["explain", "teach", "learn", "education", "tutorial"]):
+        # Check for educational/tutorial keywords
+        if any(word in prompt_lower for word in ["explain", "teach", "learn", "education", "tutorial", "how to", "guide", "understand", "concept"]):
             return "educational"
-        elif any(word in prompt_lower for word in ["research", "find", "information", "study", "analysis"]):
-            return "research"
-        elif any(word in prompt_lower for word in ["advice", "help", "solution", "problem", "fix"]):
-            return "practical_advice"
         else:
             return "default"
     
     elif category == "fast_simple_task":
-        if any(word in prompt_lower for word in ["summarize", "summary", "condense", "brief"]):
+        # Check for summarization keywords
+        if any(word in prompt_lower for word in ["summarize", "summary", "condense", "brief", "overview", "key points", "main points"]):
             return "summarization"
-        elif any(word in prompt_lower for word in ["translate", "language", "translation"]):
-            return "translation"
-        elif any(word in prompt_lower for word in ["format", "organize", "structure", "layout"]):
-            return "formatting"
         else:
             return "default"
     
     elif category == "conversational_ai":
-        if any(word in prompt_lower for word in ["chat", "casual", "small talk", "friendly"]):
-            return "casual_chat"
-        elif any(word in prompt_lower for word in ["support", "emotional", "therapeutic", "comfort"]):
+        # Check for therapeutic/support keywords
+        if any(word in prompt_lower for word in ["support", "emotional", "therapeutic", "comfort", "feel", "help me", "advice", "struggling", "difficult"]):
             return "therapeutic"
-        elif any(word in prompt_lower for word in ["entertain", "fun", "humor", "joke", "story"]):
-            return "entertainment"
         else:
             return "default"
     
