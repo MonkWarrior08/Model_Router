@@ -73,7 +73,7 @@
     }
   },
   "conversational_ai": {
-    "provider": "claude",
+    "provider": "gemini",
     "model": "gemini-2.0-flash-lite-preview-02-05",
     "temperature": 1.0,
     "rationale": "Best for witty, engaging dialogue that requires access to real-time information and a unique personality. [28]",

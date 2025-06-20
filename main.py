@@ -9,93 +9,129 @@ from router import choose_model
 # Load environment variables from .env file
 load_dotenv()
 
+# Check if API keys are loaded
+openai_key = os.getenv("OPENAI_API_KEY")
+anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+google_key = os.getenv("GOOGLE_API_KEY")
+
+if not openai_key or openai_key == "your_openai_api_key_here":
+    print("⚠️ Warning: OPENAI_API_KEY not found or not set properly in .env file")
+if not anthropic_key or anthropic_key == "your_anthropic_api_key_here":
+    print("⚠️ Warning: ANTHROPIC_API_KEY not found or not set properly in .env file")
+if not google_key or google_key == "your_google_api_key_here":
+    print("⚠️ Warning: GOOGLE_API_KEY not found or not set properly in .env file")
+
 # --- API Client Initializations ---
-openai_client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-anthropic_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+openai_client = openai.OpenAI(api_key=openai_key)
+anthropic_client = anthropic.Anthropic(api_key=anthropic_key)
+genai.configure(api_key=google_key)
 
 # --- Model Execution Functions ---
 
 def execute_openai(prompt: str, conversation_history: list, model_name: str = "gpt-4o", temperature: float = 0.3):
+    if not openai_key or openai_key == "your_openai_api_key_here":
+        return "❌ Error: OpenAI API key not configured. Please add your OPENAI_API_KEY to the .env file."
+    
     print(f"\n--- Executing with OpenAI ({model_name}) at temperature {temperature} ---\n")
     
-    # Build messages with conversation history
-    messages = []
-    for msg in conversation_history:
-        messages.append({"role": msg["role"], "content": msg["content"]})
-    messages.append({"role": "user", "content": prompt})
-    
-    response = openai_client.chat.completions.create(
-        model=model_name,
-        messages=messages,
-        temperature=temperature,
-        stream=True
-    )
-    
-    full_response = ""
-    for chunk in response:
-        content = chunk.choices[0].delta.content
-        if content:
-            print(content, end='', flush=True)
-            full_response += content
-    print()
-    
-    return full_response
+    try:
+        # Build messages with conversation history
+        messages = []
+        for msg in conversation_history:
+            messages.append({"role": msg["role"], "content": msg["content"]})
+        messages.append({"role": "user", "content": prompt})
+        
+        response = openai_client.chat.completions.create(
+            model=model_name,
+            messages=messages,
+            temperature=temperature,
+            stream=True
+        )
+        
+        full_response = ""
+        for chunk in response:
+            content = chunk.choices[0].delta.content
+            if content:
+                print(content, end='', flush=True)
+                full_response += content
+        print()
+        
+        return full_response
+    except Exception as e:
+        error_msg = f"❌ OpenAI Error: {str(e)}"
+        print(error_msg)
+        return error_msg
 
 
 def execute_claude(prompt: str, conversation_history: list, model_name: str = "claude-3-opus-20240229", temperature: float = 0.3):
+    if not anthropic_key or anthropic_key == "your_anthropic_api_key_here":
+        return "❌ Error: Anthropic API key not configured. Please add your ANTHROPIC_API_KEY to the .env file."
+    
     print(f"\n--- Executing with Anthropic ({model_name}) at temperature {temperature} ---\n")
     
-    # Build messages with conversation history
-    messages = []
-    for msg in conversation_history:
-        messages.append({"role": msg["role"], "content": msg["content"]})
-    messages.append({"role": "user", "content": prompt})
-    
-    full_response = ""
-    with anthropic_client.messages.stream(
-        model=model_name,
-        max_tokens=2048,
-        temperature=temperature,
-        messages=messages
-    ) as stream:
-        for text in stream.text_stream:
-            print(text, end="", flush=True)
-            full_response += text
-    print()
-    
-    return full_response
+    try:
+        # Build messages with conversation history
+        messages = []
+        for msg in conversation_history:
+            messages.append({"role": msg["role"], "content": msg["content"]})
+        messages.append({"role": "user", "content": prompt})
+        
+        full_response = ""
+        with anthropic_client.messages.stream(
+            model=model_name,
+            max_tokens=2048,
+            temperature=temperature,
+            messages=messages
+        ) as stream:
+            for text in stream.text_stream:
+                print(text, end="", flush=True)
+                full_response += text
+        print()
+        
+        return full_response
+    except Exception as e:
+        error_msg = f"❌ Anthropic Error: {str(e)}"
+        print(error_msg)
+        return error_msg
 
 
-def execute_gemini(prompt: str, conversation_history: list, model_name: str = "gemini-1.5-pro-latest", temperature: float = 0.3):
+def execute_gemini(prompt: str, conversation_history: list, model_name: str = "gemini-2.5-pro", temperature: float = 0.3):
+    if not google_key or google_key == "your_google_api_key_here":
+        return "❌ Error: Google API key not configured. Please add your GOOGLE_API_KEY to the .env file."
+    
     print(f"\n--- Executing with Google ({model_name}) at temperature {temperature} ---\n")
     
-    # Build conversation history for Gemini
-    chat = genai.GenerativeModel(model_name).start_chat(history=[])
-    
-    # Add conversation history
-    for msg in conversation_history:
-        if msg["role"] == "user":
-            chat.send_message(msg["content"])
-        else:
-            # For assistant messages, we need to simulate the response
-            # This is a simplified approach - in practice you might want to store actual responses
-            pass
-    
-    # Send the current prompt
-    response = chat.send_message(
-        prompt, 
-        stream=True,
-        generation_config=genai.types.GenerationConfig(temperature=temperature)
-    )
-    
-    full_response = ""
-    for chunk in response:
-        print(chunk.text, end="", flush=True)
-        full_response += chunk.text
-    print()
-    
-    return full_response
+    try:
+        # Build conversation history for Gemini
+        chat = genai.GenerativeModel(model_name).start_chat(history=[])
+        
+        # Add conversation history
+        for msg in conversation_history:
+            if msg["role"] == "user":
+                chat.send_message(msg["content"])
+            else:
+                # For assistant messages, we need to simulate the response
+                # This is a simplified approach - in practice you might want to store actual responses
+                pass
+        
+        # Send the current prompt
+        response = chat.send_message(
+            prompt, 
+            stream=True,
+            generation_config=genai.types.GenerationConfig(temperature=temperature)
+        )
+        
+        full_response = ""
+        for chunk in response:
+            print(chunk.text, end="", flush=True)
+            full_response += chunk.text
+        print()
+        
+        return full_response
+    except Exception as e:
+        error_msg = f"❌ Google Error: {str(e)}"
+        print(error_msg)
+        return error_msg
 
 
 # --- Main CLI Command ---
