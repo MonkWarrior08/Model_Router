@@ -11,9 +11,9 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Load our benchmark data
 with open('model_prompt.json', 'r') as f:
-    BENCHMARKS = json.load(f)
+    MODEL_PROMPTS = json.load(f)
 
-TASK_CATEGORIES = list(BENCHMARKS.keys())
+TASK_CATEGORIES = list(MODEL_PROMPTS.keys())
 
 def categorize_task_and_instruction(prompt: str) -> dict:
     """
@@ -54,7 +54,7 @@ def categorize_task_and_instruction(prompt: str) -> dict:
         category = response.text.strip()
         
         # Validate the category
-        if category in BENCHMARKS:
+        if category in MODEL_PROMPTS:
             return {"category": category, "valid": True}
         else:
             print(f"⚠️ Router: Could not classify category '{category}'. Defaulting to 'general_qa'.")
@@ -67,10 +67,9 @@ def categorize_task_and_instruction(prompt: str) -> dict:
 def select_instruction_for_category(category: str, prompt: str) -> str:
     """
     Selects the appropriate instruction for the given category based on prompt content.
-    Now simplified to choose between 'default' and one specialized instruction per category.
+    Choose between 'default' and one specialized prompt per category.
     """
-    category_info = BENCHMARKS[category]
-    instructions = category_info["instructions"]
+    category_info = MODEL_PROMPTS[category]
     
     prompt_lower = prompt.lower()
     
@@ -142,7 +141,7 @@ def choose_model(prompt: str) -> dict:
     instruction_type = select_instruction_for_category(category, prompt)
     
     # 3. Get the model info and instruction
-    model_info = BENCHMARKS[category]
+    model_info = MODEL_PROMPTS[category]
     selected_instruction = model_info["instructions"][instruction_type]
     
     print(f"✅ Router: Selected category: '{category}'")

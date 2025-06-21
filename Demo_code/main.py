@@ -138,11 +138,11 @@ def execute_gemini(prompt: str, conversation_history: list, model_name: str = "g
 
 @click.command()
 def main():
-    """An intelligent AI router that selects the best model for your task."""
+    """AI router that selects the best model for your task."""
     
     print("🤖 AI Model Router")
-    print("Type 'quit' to end the conversation.")
-    print("Type 'clear' to clear conversation history.\n")
+    print("'quit' to end the conversation.")
+    print("'clear' to clear conversation history.\n")
     
     # Initialize conversation history
     conversation_history = []
@@ -170,8 +170,7 @@ def main():
         router_result = choose_model(prompt)
         model_info = router_result["model_info"]
         instruction = router_result["instruction"]
-        category = router_result["category"]
-        instruction_subtype = router_result["instruction_subtype"]
+       
         
         # Combine the instruction with the user's prompt
         full_prompt = f"{instruction}\n\nUser: {prompt}"

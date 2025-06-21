@@ -22,7 +22,7 @@
   "fast_reasoning": {
     "provider": "openai",
     "model": "o4-mini-2025-04-16",
-    "temperature": 0.5,
+    "temperature": 1.0,
     "rationale": "A smaller, cost-effective model optimized for fast reasoning. It outperforms many larger models in math, coding, and visual tasks. [17, 19]",
     "instructions": {
       "default": "You are optimized for quick, efficient reasoning and problem-solving. You excel at rapid analysis and concise solutions, mathematical and logical problem-solving, visual reasoning and pattern recognition, providing clear and direct answers, and balancing speed with accuracy.",
@@ -32,7 +32,7 @@
   "creative_writing": {
     "provider": "claude",
     "model": "claude-sonnet-4-20250514",
-    "temperature": 1.3,
+    "temperature": 1.0,
     "rationale": "Continues Anthropic's leadership in producing sophisticated, human-like, and steerable prose for high-quality content generation. [4]",
     "instructions": {
       "default": "You are a master storyteller and creative writer. You excel at crafting engaging narratives with vivid imagery, developing compelling characters and dialogue, creating atmospheric and emotionally resonant prose, adapting your writing style to different genres and tones, and balancing creativity with coherence and structure.",
@@ -62,7 +62,7 @@
   "conversational_ai": {
     "provider": "gemini",
     "model": "gemini-2.0-flash-lite-preview-02-05",
-    "temperature": 1.3,
+    "temperature": 1.0,
     "rationale": "Best for witty, engaging dialogue that requires access to real-time information and a unique personality. [28]",
     "instructions": {
       "default": "You are an engaging conversational AI with a unique personality. You excel at maintaining witty and engaging dialogue, providing real-time information and insights, adapting your personality to different contexts, creating memorable and enjoyable interactions, and balancing entertainment with helpfulness.",
