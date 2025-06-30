@@ -3,7 +3,14 @@
 
 Model Router is a Python-based tool that solves a key problem for businesses using AI: how to efficiently and effectively leverage the ever-growing ecosystem of Large Language Models (LLMs).
 
-Instead of being locked into a single provider or using a powerful, expensive model for every task, this router analyzes a user's request and dynamically routes it to the most suitable model from OpenAI, Anthropic, or Google, using a specialized, task-specific instruction to ensure the highest quality output.
+Instead of being locked into a single provider or using a powerful, expensive model for every task, this router intelligently analyzes each user request through multiple dimensions:
+
+1. **Task Classification**: Categorizes requests into specialized domains (professional coding, creative writing, conversational AI, or tutoring)
+2. **Instruction Selection**: Chooses between default and specialized instructions within each category (e.g., poetry-specific prompts for creative writing, or Socratic method for tutoring)
+3. **Complexity Analysis**: Determines the thinking level (low/medium/high) based on prompt complexity and keywords
+4. **Dynamic Parameter Optimization**: Automatically configures model-specific parameters including temperature, thinking budgets for Gemini 2.5 models, and reasoning effort for OpenAI's o-series models
+
+The router then routes to the optimal model from OpenAI, Anthropic, or Google with precisely tuned parameters to ensure the highest quality output for each specific task type.
 
 ## How to Run and Test the Demo
 
@@ -28,11 +35,11 @@ Run the interactive command-line application:
 python main.py
 ```
 
-The application starts in a continuous conversation mode. Simply type your prompt and the router will:
-1.  Analyze your request to select the best task category.
-2.  Choose the most appropriate instruction for that category.
-3.  Route to the optimal model for the task.
-4.  Stream the response to the console.
+Upon launching the application, you enter a continuous conversation mode. When you input your prompt, the router performs the following steps:
+1.  Task categorization: It identifies the most suitable task category for your request.
+2.  Instruction selection: It picks the most fitting instruction tailored to the selected category.
+3.  Model routing: It directs your task to the most optimal model available.
+4.  Response streaming: It displays the model's response directly in the console.
 
 You can type `clear` to reset the conversation history or `quit` to exit.
 
