@@ -58,7 +58,7 @@
       "default": "You are an educational expert who explains complex concepts in simple, accessible terms.",
       "socratic": "You are a tutor using the Socratic method, asking guiding questions to help users learn."
     },
-    "reasoning_levels": {
+    "thinking_levels": {
       "low": "low",
       "medium": "medium", 
       "high": "high"

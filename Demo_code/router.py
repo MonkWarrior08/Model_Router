@@ -21,52 +21,54 @@ def analyze_prompt_with_llm(prompt: str) -> dict:
     Uses LLM to analyze the user prompt and determine:
     1. Task category
     2. Instruction type (default or specialized)
-    3. Thinking level (low, medium, high)
+    3. Specific temperature and thinking level values based on what's available
     """
     
-    # Build available options for each category
-    category_options = {}
+    # Build available options for each category dynamically
+    category_details = {}
     for category, config in PROMPT_CONFIG.items():
-        category_options[category] = {
-            "instructions": list(config["instructions"].keys()),
-            "thinking_levels": ["low", "medium", "high"]
+        category_info = {
+            "instructions": {}
         }
+        
+        # Add instruction descriptions
+        for inst_key, inst_value in config["instructions"].items():
+            category_info["instructions"][inst_key] = inst_value
+        
+        # Add temperature options if available
+        if "temperatures" in config:
+            category_info["temperatures"] = config["temperatures"]
+        
+        # Add thinking level options if available
+        if "thinking_levels" in config:
+            category_info["thinking_levels"] = config["thinking_levels"]
+            
+        category_details[category] = category_info
     
     system_prompt = f"""
-    You are an expert task analyzer. Analyze the user's prompt and make three decisions:
+    You are an expert task analyzer. Analyze the user's prompt and determine the best configuration.
 
+    Available categories and their options:
+    {json.dumps(category_details, indent=2)}
+
+    Based on the user's prompt, choose:
     1. CATEGORY: Which task category best fits this prompt?
     2. INSTRUCTION_TYPE: Which instruction approach would work best?
-    3. THINKING_LEVEL: How much complexity/creativity does this task require?
+    3. TEMPERATURE: If the category has temperature options, choose the most appropriate value (or null if not available)
+    4. THINKING_LEVEL: If the category has thinking_levels, choose the most appropriate value (or null if not available)
 
-    Available categories and their instruction types:
-    
-    professional_coding:
-    - default: Expert software engineer for general coding
-    - web_development: Full-stack web developer for web applications
-    
-    creative_writing:
-    - default: Master storyteller and creative writer
-    - poem: Specialized poet for verses and poetry
-    
-    conversational_ai:
-    - default: Engaging conversational AI with personality
-    - therapeutic: Supportive partner for emotional intelligence
-    
-    tutor:
-    - default: Educational expert explaining complex concepts
-    - socratic: Tutor using Socratic method with guiding questions
-
-    Thinking levels (complexity/creativity needed):
-    - low: Simple, factual, straightforward tasks
-    - medium: Moderate complexity, balanced approach
-    - high: Complex, creative, multi-step, or innovative tasks
+    Guidelines:
+    - For simple, factual tasks: use lower temperature and thinking levels
+    - For creative, complex tasks: use higher temperature and thinking levels
+    - Only choose temperature/thinking_level if they exist for the category
+    - Use the exact values from the available options
 
     Respond in this EXACT JSON format:
     {{
         "category": "category_name",
-        "instruction_type": "instruction_name", 
-        "thinking_level": "level_name",
+        "instruction_type": "instruction_key",
+        "temperature": temperature_value_or_null,
+        "thinking_level": thinking_level_value_or_null,
         "reasoning": "Brief explanation of your choices"
     }}
 
@@ -97,6 +99,7 @@ def analyze_prompt_with_llm(prompt: str) -> dict:
         # Validate the results
         category = result.get("category")
         instruction_type = result.get("instruction_type")
+        temperature = result.get("temperature")
         thinking_level = result.get("thinking_level")
         
         # Validate category
@@ -105,18 +108,34 @@ def analyze_prompt_with_llm(prompt: str) -> dict:
             category = "conversational_ai"
             result["category"] = category
         
+        category_config = PROMPT_CONFIG[category]
+        
         # Validate instruction type for the category
-        available_instructions = list(PROMPT_CONFIG[category]["instructions"].keys())
+        available_instructions = list(category_config["instructions"].keys())
         if instruction_type not in available_instructions:
             print(f"⚠️ Router: Invalid instruction type '{instruction_type}' for category '{category}'. Defaulting to 'default'.")
             instruction_type = "default"
             result["instruction_type"] = instruction_type
+        
+        # Validate temperature if category has temperature options
+        if "temperatures" in category_config and temperature is not None:
+            available_temps = list(category_config["temperatures"].values())
+            if temperature not in available_temps:
+                print(f"⚠️ Router: Invalid temperature '{temperature}' for category '{category}'. Using default.")
+                result["temperature"] = None
+        elif "temperatures" not in category_config:
+            # Category doesn't support temperature, set to None
+            result["temperature"] = None
             
-        # Validate thinking level
-        if thinking_level not in ["low", "medium", "high"]:
-            print(f"⚠️ Router: Invalid thinking level '{thinking_level}'. Defaulting to 'medium'.")
-            thinking_level = "medium"
-            result["thinking_level"] = thinking_level
+        # Validate thinking level if category has thinking level options
+        if "thinking_levels" in category_config and thinking_level is not None:
+            available_thinking = list(category_config["thinking_levels"].values())
+            if thinking_level not in available_thinking:
+                print(f"⚠️ Router: Invalid thinking level '{thinking_level}' for category '{category}'. Using default.")
+                result["thinking_level"] = None
+        elif "thinking_levels" not in category_config:
+            # Category doesn't support thinking levels, set to None
+            result["thinking_level"] = None
         
         result["valid"] = True
         return result
@@ -127,7 +146,8 @@ def analyze_prompt_with_llm(prompt: str) -> dict:
         return {
             "category": "conversational_ai",
             "instruction_type": "default", 
-            "thinking_level": "medium",
+            "temperature": None,
+            "thinking_level": None,
             "reasoning": "Fallback due to parsing error",
             "valid": False
         }
@@ -136,7 +156,8 @@ def analyze_prompt_with_llm(prompt: str) -> dict:
         return {
             "category": "conversational_ai",
             "instruction_type": "default",
-            "thinking_level": "medium", 
+            "temperature": None,
+            "thinking_level": None, 
             "reasoning": "Fallback due to error",
             "valid": False
         }
@@ -148,11 +169,12 @@ def choose_model(prompt: str) -> dict:
     """
     print("🧠 Router: Analyzing prompt with LLM...")
 
-    # 1. Analyze the prompt with LLM to get category, instruction type, and thinking level
+    # 1. Analyze the prompt with LLM to get category, instruction type, temperature, and thinking level
     analysis = analyze_prompt_with_llm(prompt)
     category = analysis["category"]
     instruction_type = analysis["instruction_type"]
-    thinking_level = analysis["thinking_level"]
+    selected_temperature = analysis["temperature"]
+    selected_thinking_level = analysis["thinking_level"]
     
     category_config = PROMPT_CONFIG[category]
     
@@ -162,10 +184,8 @@ def choose_model(prompt: str) -> dict:
     # 3. Get the selected instruction
     selected_instruction = category_config["instructions"][instruction_type]
     
-    # 4. Select the temperature based on the thinking level, if available
-    if "temperatures" in category_config:
-        selected_temperature = category_config["temperatures"][thinking_level]
-        
+    # 4. Apply the selected temperature if available
+    if selected_temperature is not None:
         # Clamp temperature values to valid ranges for each provider
         if model_info["provider"] == "claude":
             # Claude accepts temperature 0-1
@@ -179,25 +199,22 @@ def choose_model(prompt: str) -> dict:
             
         model_info["temperature"] = selected_temperature
     
-    # 5. Select and apply thinking budget if available (only for Gemini 2.5 models)
-    if "thinking_levels" in category_config and "2.5" in model_info["model"]:
-        selected_level_value = category_config["thinking_levels"][thinking_level]
-        if selected_level_value is not None:
-            # Apply model-specific thinking budget constraints for Gemini 2.5 models
-            if model_info["model"] == "gemini-2.5-pro":
-                # 2.5 Pro: 128 to 32768, cannot disable thinking
-                selected_level_value = max(128, min(32768, selected_level_value))
-            elif model_info["model"] == "gemini-2.5-flash":
-                # 2.5 Flash: 0 to 24576
-                selected_level_value = max(0, min(24576, selected_level_value))
-            
-            model_info["thinking_budget"] = selected_level_value
+    # 5. Apply thinking budget for Gemini 2.5 models if selected
+    if selected_thinking_level is not None and "2.5" in model_info["model"]:
+        # Apply model-specific thinking budget constraints for Gemini 2.5 models
+        if model_info["model"] == "gemini-2.5-pro":
+            # 2.5 Pro: 128 to 32768, cannot disable thinking
+            selected_thinking_level = max(128, min(32768, selected_thinking_level))
+        elif model_info["model"] == "gemini-2.5-flash":
+            # 2.5 Flash: 0 to 24576
+            selected_thinking_level = max(0, min(24576, selected_thinking_level))
+        
+        model_info["thinking_budget"] = selected_thinking_level
     
-    # 6. Select and apply reasoning parameters for OpenAI o-series models
-    if "reasoning_levels" in category_config and model_info["provider"] == "openai":
-        reasoning_effort = category_config["reasoning_levels"][thinking_level]
-        if reasoning_effort is not None:
-            model_info["reasoning_effort"] = reasoning_effort
+    # 6. Apply reasoning parameters for OpenAI o-series models if selected
+    if selected_thinking_level is not None and model_info["provider"] == "openai":
+        if selected_thinking_level in ["low", "medium", "high"]:
+            model_info["reasoning_effort"] = selected_thinking_level
             
     # --- Print summary ---
     print(f"✅ Router: Selected category: '{category}'")
@@ -210,14 +227,14 @@ def choose_model(prompt: str) -> dict:
         print(f"💡 Router: Applying thinking budget: {model_info['thinking_budget']}")
     elif "reasoning_effort" in model_info:
         print(f"🧠 Router: Applying reasoning effort: {model_info['reasoning_effort']}")
-    elif "thinking_levels" in category_config or "reasoning_levels" in category_config:
-        print(f"🎯 Router: Selected thinking level: '{thinking_level}'")
+    elif selected_thinking_level is not None:
+        print(f"🎯 Router: Selected thinking level: '{selected_thinking_level}'")
 
     return {
         "model_info": model_info,
         "instruction": selected_instruction,
         "category": category,
         "instruction_subtype": instruction_type,
-        "thinking_level": thinking_level,
+        "thinking_level": selected_thinking_level,
         "analysis": analysis
     }
