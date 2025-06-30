@@ -2,7 +2,8 @@ import os
 import click
 import openai
 import anthropic
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 from router import choose_model
 
@@ -18,14 +19,15 @@ google_key = os.getenv("GOOGLE_API_KEY")
 # --- API Client Initializations ---
 openai_client = openai.OpenAI(api_key=openai_key)
 anthropic_client = anthropic.Anthropic(api_key=anthropic_key)
-genai.configure(api_key=google_key)
+genai_client = genai.Client(api_key=google_key)
 
 # --- Model Execution Functions ---
 
-def execute_openai(prompt: str, conversation_history: list, model_name: str, temperature: float = None):
+def execute_openai(prompt: str, conversation_history: list, model_name: str, temperature: float = None, reasoning_effort: str = None):
     
     temp_msg = f"at temperature {temperature}" if temperature is not None else "at default temperature"
-    print(f"\n--- Executing with OpenAI ({model_name}) {temp_msg} ---\n")
+    reasoning_msg = f"with reasoning_effort: {reasoning_effort}" if reasoning_effort is not None else ""
+    print(f"\n--- Executing with OpenAI ({model_name}) {temp_msg} {reasoning_msg} ---\n")
     
     try:
         # Build messages with conversation history
@@ -41,6 +43,10 @@ def execute_openai(prompt: str, conversation_history: list, model_name: str, tem
         }
         if temperature is not None:
             api_params["temperature"] = temperature
+        
+        # Add reasoning parameters for o-series models (o4-mini, o3, etc.)
+        if reasoning_effort is not None and ("o4" in model_name or "o3" in model_name or "o1" in model_name):
+            api_params["reasoning_effort"] = reasoning_effort
 
         response = openai_client.chat.completions.create(**api_params)
         
@@ -101,41 +107,41 @@ def execute_gemini(prompt: str, conversation_history: list, model_name: str, tem
     
     try:
         # Build conversation history for Gemini
-        chat = genai.GenerativeModel(model_name).start_chat(history=[])
-        
-        # Add conversation history
+        contents = []
         for msg in conversation_history:
-            if msg["role"] == "user":
-                chat.send_message(msg["content"])
-            else:
-                # For assistant messages, we need to simulate the response
-                # This is a simplified approach - in practice you might want to store actual responses
-                pass
+            contents.append(f"{msg['role']}: {msg['content']}")
+        contents.append(f"user: {prompt}")
+        
+        # Combine all conversation into a single prompt
+        full_conversation = "\n".join(contents)
         
         # Set up generation config
-        gen_config_params = {}
+        config_params = {}
         if temperature is not None:
-            gen_config_params["temperature"] = temperature
+            config_params["temperature"] = temperature
         
+        # Set up thinking config if thinking_budget is specified
+        thinking_config = None
         if thinking_budget is not None:
-            gen_config_params["thinking_config"] = genai.types.ThinkingConfig(thinking_budget=thinking_budget)
+            thinking_config = types.ThinkingConfig(thinking_budget=thinking_budget)
+        
+        # Create generation config
+        config = types.GenerateContentConfig(
+            **config_params,
+            thinking_config=thinking_config
+        ) if config_params or thinking_config else None
 
-        gen_config = genai.types.GenerationConfig(**gen_config_params)
-
-        # Send the current prompt
-        response = chat.send_message(
-            prompt, 
-            stream=True,
-            generation_config=gen_config
+        # Generate content using the new API
+        response = genai_client.models.generate_content(
+            model=model_name,
+            contents=full_conversation,
+            config=config
         )
         
-        full_response = ""
-        for chunk in response:
-            print(chunk.text, end="", flush=True)
-            full_response += chunk.text
+        print(response.text, end="", flush=True)
         print()
         
-        return full_response
+        return response.text
     except Exception as e:
         error_msg = f"❌ Google Error: {str(e)}"
         print(error_msg)
@@ -195,6 +201,10 @@ def main():
         # Add temperature if it's specified for the selected model config
         if "temperature" in model_info:
             params["temperature"] = model_info["temperature"]
+        
+        # Add reasoning parameters for OpenAI o-series models
+        if "reasoning_effort" in model_info:
+            params["reasoning_effort"] = model_info["reasoning_effort"]
 
         if model_info["provider"] == "openai":
             ai_response = execute_openai(**params)

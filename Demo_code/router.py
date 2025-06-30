@@ -1,13 +1,14 @@
 import os
 import json
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # We use a cheap and fast model for the routing itself.
 # Gemini Flash 2.0 Flash Lite is a good choice for fast classification tasks.
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+genai_client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Load our benchmark data
 with open('model_prompt.json', 'r') as f:
@@ -34,15 +35,13 @@ def categorize_task(prompt: str) -> dict:
     """
 
 
-        # Create the model instance
-    model = genai.GenerativeModel('gemini-2.0-flash-lite-preview-02-05')
-        
-        # Combine system and user prompt for Gemini
+        # Use the new Gemini API client
     full_prompt = f"{system_prompt}\n\nUser prompt: {prompt}"
         
-    response = model.generate_content(
-        full_prompt,
-        generation_config=genai.types.GenerationConfig(
+    response = genai_client.models.generate_content(
+        model='gemini-2.0-flash-lite-preview-02-05',
+        contents=full_prompt,
+        config=types.GenerateContentConfig(
             temperature=0,
             max_output_tokens=50
         )
@@ -143,27 +142,54 @@ def choose_model(prompt: str) -> dict:
     # 5. Select the temperature based on the thinking level, if available
     if "temperatures" in category_config:
         selected_temperature = category_config["temperatures"][thinking_level]
+        
+        # Clamp temperature values to valid ranges for each provider
+        if model_info["provider"] == "claude":
+            # Claude accepts temperature 0-1
+            selected_temperature = min(1.0, max(0.0, selected_temperature))
+        elif model_info["provider"] == "openai":
+            # OpenAI accepts temperature 0-2
+            selected_temperature = min(2.0, max(0.0, selected_temperature))
+        elif model_info["provider"] == "gemini":
+            # Gemini accepts temperature 0-2
+            selected_temperature = min(2.0, max(0.0, selected_temperature))
+            
         model_info["temperature"] = selected_temperature
     
-    # 6. Select and apply thinking budget if available
-    if "thinking_levels" in category_config:
+    # 6. Select and apply thinking budget if available (only for Gemini 2.5 models)
+    if "thinking_levels" in category_config and "2.5" in model_info["model"]:
         selected_level_value = category_config["thinking_levels"][thinking_level]
         if selected_level_value is not None:
+            # Apply model-specific thinking budget constraints for Gemini 2.5 models
+            if model_info["model"] == "gemini-2.5-pro":
+                # 2.5 Pro: 128 to 32768, cannot disable thinking
+                selected_level_value = max(128, min(32768, selected_level_value))
+            elif model_info["model"] == "gemini-2.5-flash":
+                # 2.5 Flash: 0 to 24576
+                selected_level_value = max(0, min(24576, selected_level_value))
+            
             model_info["thinking_budget"] = selected_level_value
+    
+    # 7. Select and apply reasoning parameters for OpenAI o-series models
+    if "reasoning_levels" in category_config and model_info["provider"] == "openai":
+        reasoning_effort = category_config["reasoning_levels"][thinking_level]
+        if reasoning_effort is not None:
+            model_info["reasoning_effort"] = reasoning_effort
             
     # --- Print summary ---
     print(f"✅ Router: Selected category: '{category}'")
     print(f"📝 Router: Selected instruction: '{instruction_type}'")
 
-    # Only show thinking level if it's for a "thinking" category
-    if "thinking_levels" in category_config:
-        print(f"⚙️ Router: Selected thinking level: '{thinking_level}'")
+
 
     if "temperature" in model_info:
         print(f"🌡️ Router: Applying temperature: {model_info['temperature']}")
     
     if "thinking_budget" in model_info and model_info["thinking_budget"] is not None:
         print(f"💡 Router: Applying thinking budget: {model_info['thinking_budget']}")
+    
+    if "reasoning_effort" in model_info:
+        print(f"🧠 Router: Applying reasoning effort: {model_info['reasoning_effort']}")
 
     return {
         "model_info": model_info,

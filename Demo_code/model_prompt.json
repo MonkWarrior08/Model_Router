@@ -14,7 +14,7 @@
       "high": 0.7
     },
     "thinking_levels": {
-      "low": 0,
+      "low": 128,
       "medium": 8192,
       "high": 24000
     }
@@ -46,7 +46,7 @@
     "temperatures": {
       "low": 0.8,
       "medium": 1.0,
-      "high": 1.2
+      "high": 1.0
     }
   },
   "tutor": {
@@ -58,10 +58,10 @@
       "default": "You are an educational expert who explains complex concepts in simple, accessible terms.",
       "socratic": "You are a tutor using the Socratic method, asking guiding questions to help users learn."
     },
-    "thinking_levels": {
-      "low": null,
-      "medium": null,
-      "high": null
+    "reasoning_levels": {
+      "low": "low",
+      "medium": "medium", 
+      "high": "high"
     }
   }
 }
