@@ -28,11 +28,12 @@ genai.configure(api_key=google_key)
 
 # --- Model Execution Functions ---
 
-def execute_openai(prompt: str, conversation_history: list, model_name: str = "gpt-4o", temperature: float = 0.3):
+def execute_openai(prompt: str, conversation_history: list, model_name: str = "gpt-4o", temperature: float = None):
     if not openai_key or openai_key == "your_openai_api_key_here":
         return "❌ Error: OpenAI API key not configured. Please add your OPENAI_API_KEY to the .env file."
     
-    print(f"\n--- Executing with OpenAI ({model_name}) at temperature {temperature} ---\n")
+    temp_msg = f"at temperature {temperature}" if temperature is not None else "at default temperature"
+    print(f"\n--- Executing with OpenAI ({model_name}) {temp_msg} ---\n")
     
     try:
         # Build messages with conversation history
@@ -41,12 +42,15 @@ def execute_openai(prompt: str, conversation_history: list, model_name: str = "g
             messages.append({"role": msg["role"], "content": msg["content"]})
         messages.append({"role": "user", "content": prompt})
         
-        response = openai_client.chat.completions.create(
-            model=model_name,
-            messages=messages,
-            temperature=temperature,
-            stream=True
-        )
+        api_params = {
+            "model": model_name,
+            "messages": messages,
+            "stream": True,
+        }
+        if temperature is not None:
+            api_params["temperature"] = temperature
+
+        response = openai_client.chat.completions.create(**api_params)
         
         full_response = ""
         for chunk in response:
@@ -63,11 +67,12 @@ def execute_openai(prompt: str, conversation_history: list, model_name: str = "g
         return error_msg
 
 
-def execute_claude(prompt: str, conversation_history: list, model_name: str = "claude-3-opus-20240229", temperature: float = 0.3):
+def execute_claude(prompt: str, conversation_history: list, model_name: str = "claude-3-opus-20240229", temperature: float = None):
     if not anthropic_key or anthropic_key == "your_anthropic_api_key_here":
         return "❌ Error: Anthropic API key not configured. Please add your ANTHROPIC_API_KEY to the .env file."
     
-    print(f"\n--- Executing with Anthropic ({model_name}) at temperature {temperature} ---\n")
+    temp_msg = f"at temperature {temperature}" if temperature is not None else "at default temperature"
+    print(f"\n--- Executing with Anthropic ({model_name}) {temp_msg} ---\n")
     
     try:
         # Build messages with conversation history
@@ -76,13 +81,16 @@ def execute_claude(prompt: str, conversation_history: list, model_name: str = "c
             messages.append({"role": msg["role"], "content": msg["content"]})
         messages.append({"role": "user", "content": prompt})
         
+        api_params = {
+            "model": model_name,
+            "max_tokens": 2048,
+            "messages": messages,
+        }
+        if temperature is not None:
+            api_params["temperature"] = temperature
+
         full_response = ""
-        with anthropic_client.messages.stream(
-            model=model_name,
-            max_tokens=2048,
-            temperature=temperature,
-            messages=messages
-        ) as stream:
+        with anthropic_client.messages.stream(**api_params) as stream:
             for text in stream.text_stream:
                 print(text, end="", flush=True)
                 full_response += text
@@ -95,11 +103,13 @@ def execute_claude(prompt: str, conversation_history: list, model_name: str = "c
         return error_msg
 
 
-def execute_gemini(prompt: str, conversation_history: list, model_name: str = "gemini-2.5-pro", temperature: float = 0.3):
+def execute_gemini(prompt: str, conversation_history: list, model_name: str = "gemini-2.5-pro", temperature: float = None, thinking_budget: int = None):
     if not google_key or google_key == "your_google_api_key_here":
         return "❌ Error: Google API key not configured. Please add your GOOGLE_API_KEY to the .env file."
     
-    print(f"\n--- Executing with Google ({model_name}) at temperature {temperature} ---\n")
+    temp_msg = f"at temperature {temperature}" if temperature is not None else "at default temperature"
+    thinking_msg = f"with thinking_budget: {thinking_budget}" if thinking_budget is not None else ""
+    print(f"\n--- Executing with Google ({model_name}) {temp_msg} {thinking_msg}---\n")
     
     try:
         # Build conversation history for Gemini
@@ -114,11 +124,21 @@ def execute_gemini(prompt: str, conversation_history: list, model_name: str = "g
                 # This is a simplified approach - in practice you might want to store actual responses
                 pass
         
+        # Set up generation config
+        gen_config_params = {}
+        if temperature is not None:
+            gen_config_params["temperature"] = temperature
+        
+        if thinking_budget is not None:
+            gen_config_params["thinking_config"] = genai.types.ThinkingConfig(thinking_budget=thinking_budget)
+
+        gen_config = genai.types.GenerationConfig(**gen_config_params)
+
         # Send the current prompt
         response = chat.send_message(
             prompt, 
             stream=True,
-            generation_config=genai.types.GenerationConfig(temperature=temperature)
+            generation_config=gen_config
         )
         
         full_response = ""
@@ -177,12 +197,26 @@ def main():
         
         # 2. A simple 'factory' to call the correct execution function with the full prompt
         ai_response = ""
+        
+        # Prepare parameters that are common to all execution functions
+        params = {
+            "prompt": full_prompt,
+            "conversation_history": conversation_history,
+            "model_name": model_info["model"],
+        }
+        # Add temperature if it's specified for the selected model config
+        if "temperature" in model_info:
+            params["temperature"] = model_info["temperature"]
+
         if model_info["provider"] == "openai":
-            ai_response = execute_openai(full_prompt, conversation_history, model_info["model"], model_info["temperature"])
+            ai_response = execute_openai(**params)
         elif model_info["provider"] == "claude":
-            ai_response = execute_claude(full_prompt, conversation_history, model_info["model"], model_info["temperature"])
+            ai_response = execute_claude(**params)
         elif model_info["provider"] == "gemini":
-            ai_response = execute_gemini(full_prompt, conversation_history, model_info["model"], model_info["temperature"])
+            # Add Gemini-specific parameters
+            if "thinking_budget" in model_info:
+                params["thinking_budget"] = model_info.get("thinking_budget")
+            ai_response = execute_gemini(**params)
         else:
             print(f"Error: Unknown model provider '{model_info['provider']}'.")
         
