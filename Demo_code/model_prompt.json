@@ -44,8 +44,8 @@
       "therapeutic": "You are a supportive conversational partner specializing in emotional intelligence and active listening."
     },
     "temperatures": {
-      "low": 0.8,
-      "medium": 1.0,
+      "low": 0.3,
+      "medium": 0.6,
       "high": 1.0
     }
   },
