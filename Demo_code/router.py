@@ -202,7 +202,6 @@ def choose_model(prompt: str) -> dict:
         "model_info": model_info,
         "instruction": selected_instruction,
         "category": category,
-        "instruction_subtype": instruction_type,
         "thinking_level": selected_thinking_level,
         "analysis": analysis
     }
