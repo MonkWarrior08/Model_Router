@@ -16,130 +16,153 @@ with open('model_prompt.json', 'r') as f:
 
 TASK_CATEGORIES = list(PROMPT_CONFIG.keys())
 
-def categorize_task(prompt: str) -> dict:
+def analyze_prompt_with_llm(prompt: str) -> dict:
     """
-    Categorizes the user request into a task category.
+    Uses LLM to analyze the user prompt and determine:
+    1. Task category
+    2. Instruction type (default or specialized)
+    3. Thinking level (low, medium, high)
     """
+    
+    # Build available options for each category
+    category_options = {}
+    for category, config in PROMPT_CONFIG.items():
+        category_options[category] = {
+            "instructions": list(config["instructions"].keys()),
+            "thinking_levels": ["low", "medium", "high"]
+        }
+    
     system_prompt = f"""
-    You are an expert task classifier. Your job is to analyze a user's prompt and
-    classify it into one of the following task categories.
-    Respond with ONLY the category name and nothing else.
+    You are an expert task analyzer. Analyze the user's prompt and make three decisions:
 
-    Available categories are: {', '.join(TASK_CATEGORIES)}
+    1. CATEGORY: Which task category best fits this prompt?
+    2. INSTRUCTION_TYPE: Which instruction approach would work best?
+    3. THINKING_LEVEL: How much complexity/creativity does this task require?
 
-    Examples:
-    - "Write a poem about love" → creative_writing
-    - "Build a web application" → professional_coding
-    - "Can you explain this to me?" → tutor
-    - "Let's have a casual chat" → conversational_ai
+    Available categories and their instruction types:
+    
+    professional_coding:
+    - default: Expert software engineer for general coding
+    - web_development: Full-stack web developer for web applications
+    
+    creative_writing:
+    - default: Master storyteller and creative writer
+    - poem: Specialized poet for verses and poetry
+    
+    conversational_ai:
+    - default: Engaging conversational AI with personality
+    - therapeutic: Supportive partner for emotional intelligence
+    
+    tutor:
+    - default: Educational expert explaining complex concepts
+    - socratic: Tutor using Socratic method with guiding questions
+
+    Thinking levels (complexity/creativity needed):
+    - low: Simple, factual, straightforward tasks
+    - medium: Moderate complexity, balanced approach
+    - high: Complex, creative, multi-step, or innovative tasks
+
+    Respond in this EXACT JSON format:
+    {{
+        "category": "category_name",
+        "instruction_type": "instruction_name", 
+        "thinking_level": "level_name",
+        "reasoning": "Brief explanation of your choices"
+    }}
+
+    User prompt: {prompt}
     """
 
-
-        # Use the new Gemini API client
-    full_prompt = f"{system_prompt}\n\nUser prompt: {prompt}"
-        
-    response = genai_client.models.generate_content(
-        model='gemini-2.0-flash-lite-preview-02-05',
-        contents=full_prompt,
-        config=types.GenerateContentConfig(
-            temperature=0,
-            max_output_tokens=50
+    try:
+        response = genai_client.models.generate_content(
+            model='gemini-2.0-flash-lite-preview-02-05',
+            contents=system_prompt,
+            config=types.GenerateContentConfig(
+                temperature=0,
+                max_output_tokens=200
+            )
         )
-    )
 
-    category = response.text.strip()
+        # Parse the JSON response
+        result_text = response.text.strip()
         
-        # Validate the category
-    if category in PROMPT_CONFIG:
-        return {"category": category, "valid": True}
-    else:
-        print(f"⚠️ Router: Could not classify category '{category}'. Defaulting to 'conversational_ai'.")
-        return {"category": "conversational_ai", "valid": False}
+        # Remove any markdown formatting if present
+        if result_text.startswith('```json'):
+            result_text = result_text.replace('```json', '').replace('```', '').strip()
+        elif result_text.startswith('```'):
+            result_text = result_text.replace('```', '').strip()
             
-
-def select_instruction_for_category(category: str, prompt: str) -> str:
-    """
-    Selects the appropriate instruction for the given category based on prompt content.
-    Choose between 'default' and one specialized prompt per category.
-    """
-    instruction_set = PROMPT_CONFIG[category]["instructions"]
-    
-    prompt_lower = prompt.lower()
-    
-    # It checks for keywords associated with specialized instructions.
-    for instruction_type in instruction_set:
-        if instruction_type == "default":
-            continue
+        result = json.loads(result_text)
+        
+        # Validate the results
+        category = result.get("category")
+        instruction_type = result.get("instruction_type")
+        thinking_level = result.get("thinking_level")
+        
+        # Validate category
+        if category not in PROMPT_CONFIG:
+            print(f"⚠️ Router: Invalid category '{category}'. Defaulting to 'conversational_ai'.")
+            category = "conversational_ai"
+            result["category"] = category
+        
+        # Validate instruction type for the category
+        available_instructions = list(PROMPT_CONFIG[category]["instructions"].keys())
+        if instruction_type not in available_instructions:
+            print(f"⚠️ Router: Invalid instruction type '{instruction_type}' for category '{category}'. Defaulting to 'default'.")
+            instruction_type = "default"
+            result["instruction_type"] = instruction_type
             
-        keywords = []
-        if category == "creative_writing" and instruction_type == "poem":
-            keywords = ["poem", "poetry", "verse", "sonnet", "haiku", "rhyme", "stanza", "lyric"]
-        elif category == "professional_coding" and instruction_type == "web_development":
-            keywords = ["web", "html", "css", "javascript", "frontend", "website", "react", "node", "responsive", "ui", "ux"]
-        elif category == "tutor" and instruction_type == "socratic":
-            keywords = ["socratic", "guide me", "ask me questions", "help me understand"]
-        elif category == "conversational_ai" and instruction_type == "therapeutic":
-            keywords = ["support", "emotional", "therapeutic", "comfort", "feel", "help me", "advice", "struggling", "difficult"]
-
-        if any(word in prompt_lower for word in keywords):
-            return instruction_type
-
-    return "default"
-
-def select_thinking_level(category: str, prompt: str) -> str:
-    """
-    Selects the thinking level (e.g., low, medium, high) based on prompt complexity.
-    This thinking level is used to select temperature and thinking budget.
-    """
-    prompt_lower = prompt.lower()
-    word_count = len(prompt_lower.split())
-
-    # Keywords for higher creativity/complexity
-    high_keywords = [
-        "creative", "imagine", "novel idea", "out of the box", "brainstorm", "explore", 
-        "different perspective", "complex", "multi-step", "advanced", "detailed", 
-        "in-depth", "architecture", "system design", "recursive", "algorithm", 
-        "proof", "theorem", "comprehensive"
-    ]
-    
-    # Keywords for lower, more factual/simple tasks
-    low_keywords = [
-        "fact", "strictly", "exact", "precise", "code", "step-by-step", "calculate",
-        "summarize", "list", "what is"
-    ]
-
-    if any(keyword in prompt_lower for keyword in high_keywords) or word_count > 150:
-        return "high"
-    
-    if any(keyword in prompt_lower for keyword in low_keywords) or word_count < 20:
-        return "low"
-
-    # Default to medium
-    return "medium"
+        # Validate thinking level
+        if thinking_level not in ["low", "medium", "high"]:
+            print(f"⚠️ Router: Invalid thinking level '{thinking_level}'. Defaulting to 'medium'.")
+            thinking_level = "medium"
+            result["thinking_level"] = thinking_level
+        
+        result["valid"] = True
+        return result
+        
+    except json.JSONDecodeError as e:
+        print(f"⚠️ Router: Failed to parse LLM response as JSON: {e}")
+        print(f"Raw response: {response.text}")
+        return {
+            "category": "conversational_ai",
+            "instruction_type": "default", 
+            "thinking_level": "medium",
+            "reasoning": "Fallback due to parsing error",
+            "valid": False
+        }
+    except Exception as e:
+        print(f"⚠️ Router: Error analyzing prompt with LLM: {e}")
+        return {
+            "category": "conversational_ai",
+            "instruction_type": "default",
+            "thinking_level": "medium", 
+            "reasoning": "Fallback due to error",
+            "valid": False
+        }
 
 def choose_model(prompt: str) -> dict:
     """
-    First categorizes the user request, then selects the instruction, temperature,
-    and thinking budget to build the final model configuration.
+    Uses LLM to analyze the user request and selects the model configuration,
+    instruction, temperature, and thinking budget.
     """
-    print("🧠 Router: Analyzing prompt...")
+    print("🧠 Router: Analyzing prompt with LLM...")
 
-    # 1. Categorize the task
-    categorization = categorize_task(prompt)
-    category = categorization["category"]
+    # 1. Analyze the prompt with LLM to get category, instruction type, and thinking level
+    analysis = analyze_prompt_with_llm(prompt)
+    category = analysis["category"]
+    instruction_type = analysis["instruction_type"]
+    thinking_level = analysis["thinking_level"]
+    
     category_config = PROMPT_CONFIG[category]
     
-    # 2. Get the model configuration (it's now a single object)
-    model_info = category_config["model"].copy() # Use .copy() to avoid modifying the original config
+    # 2. Get the model configuration
+    model_info = category_config["model"].copy()
 
-    # 3. Select the instruction
-    instruction_type = select_instruction_for_category(category, prompt)
+    # 3. Get the selected instruction
     selected_instruction = category_config["instructions"][instruction_type]
     
-    # 4. Select the operational thinking level
-    thinking_level = select_thinking_level(category, prompt)
-    
-    # 5. Select the temperature based on the thinking level, if available
+    # 4. Select the temperature based on the thinking level, if available
     if "temperatures" in category_config:
         selected_temperature = category_config["temperatures"][thinking_level]
         
@@ -156,7 +179,7 @@ def choose_model(prompt: str) -> dict:
             
         model_info["temperature"] = selected_temperature
     
-    # 6. Select and apply thinking budget if available (only for Gemini 2.5 models)
+    # 5. Select and apply thinking budget if available (only for Gemini 2.5 models)
     if "thinking_levels" in category_config and "2.5" in model_info["model"]:
         selected_level_value = category_config["thinking_levels"][thinking_level]
         if selected_level_value is not None:
@@ -170,7 +193,7 @@ def choose_model(prompt: str) -> dict:
             
             model_info["thinking_budget"] = selected_level_value
     
-    # 7. Select and apply reasoning parameters for OpenAI o-series models
+    # 6. Select and apply reasoning parameters for OpenAI o-series models
     if "reasoning_levels" in category_config and model_info["provider"] == "openai":
         reasoning_effort = category_config["reasoning_levels"][thinking_level]
         if reasoning_effort is not None:
@@ -180,20 +203,21 @@ def choose_model(prompt: str) -> dict:
     print(f"✅ Router: Selected category: '{category}'")
     print(f"📝 Router: Selected instruction: '{instruction_type}'")
 
-
-
     if "temperature" in model_info:
         print(f"🌡️ Router: Applying temperature: {model_info['temperature']}")
     
     if "thinking_budget" in model_info and model_info["thinking_budget"] is not None:
         print(f"💡 Router: Applying thinking budget: {model_info['thinking_budget']}")
-    
-    if "reasoning_effort" in model_info:
+    elif "reasoning_effort" in model_info:
         print(f"🧠 Router: Applying reasoning effort: {model_info['reasoning_effort']}")
+    elif "thinking_levels" in category_config or "reasoning_levels" in category_config:
+        print(f"🎯 Router: Selected thinking level: '{thinking_level}'")
 
     return {
         "model_info": model_info,
         "instruction": selected_instruction,
         "category": category,
-        "instruction_subtype": instruction_type
+        "instruction_subtype": instruction_type,
+        "thinking_level": thinking_level,
+        "analysis": analysis
     }
