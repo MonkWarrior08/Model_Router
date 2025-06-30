@@ -14,12 +14,6 @@ openai_key = os.getenv("OPENAI_API_KEY")
 anthropic_key = os.getenv("ANTHROPIC_API_KEY")
 google_key = os.getenv("GOOGLE_API_KEY")
 
-if not openai_key or openai_key == "your_openai_api_key_here":
-    print("⚠️ Warning: OPENAI_API_KEY not found or not set properly in .env file")
-if not anthropic_key or anthropic_key == "your_anthropic_api_key_here":
-    print("⚠️ Warning: ANTHROPIC_API_KEY not found or not set properly in .env file")
-if not google_key or google_key == "your_google_api_key_here":
-    print("⚠️ Warning: GOOGLE_API_KEY not found or not set properly in .env file")
 
 # --- API Client Initializations ---
 openai_client = openai.OpenAI(api_key=openai_key)
@@ -28,9 +22,7 @@ genai.configure(api_key=google_key)
 
 # --- Model Execution Functions ---
 
-def execute_openai(prompt: str, conversation_history: list, model_name: str = "gpt-4o", temperature: float = None):
-    if not openai_key or openai_key == "your_openai_api_key_here":
-        return "❌ Error: OpenAI API key not configured. Please add your OPENAI_API_KEY to the .env file."
+def execute_openai(prompt: str, conversation_history: list, model_name: str, temperature: float = None):
     
     temp_msg = f"at temperature {temperature}" if temperature is not None else "at default temperature"
     print(f"\n--- Executing with OpenAI ({model_name}) {temp_msg} ---\n")
@@ -67,9 +59,7 @@ def execute_openai(prompt: str, conversation_history: list, model_name: str = "g
         return error_msg
 
 
-def execute_claude(prompt: str, conversation_history: list, model_name: str = "claude-3-opus-20240229", temperature: float = None):
-    if not anthropic_key or anthropic_key == "your_anthropic_api_key_here":
-        return "❌ Error: Anthropic API key not configured. Please add your ANTHROPIC_API_KEY to the .env file."
+def execute_claude(prompt: str, conversation_history: list, model_name: str, temperature: float = None):
     
     temp_msg = f"at temperature {temperature}" if temperature is not None else "at default temperature"
     print(f"\n--- Executing with Anthropic ({model_name}) {temp_msg} ---\n")
@@ -103,9 +93,7 @@ def execute_claude(prompt: str, conversation_history: list, model_name: str = "c
         return error_msg
 
 
-def execute_gemini(prompt: str, conversation_history: list, model_name: str = "gemini-2.5-pro", temperature: float = None, thinking_budget: int = None):
-    if not google_key or google_key == "your_google_api_key_here":
-        return "❌ Error: Google API key not configured. Please add your GOOGLE_API_KEY to the .env file."
+def execute_gemini(prompt: str, conversation_history: list, model_name: str, temperature: float = None, thinking_budget: int = None):
     
     temp_msg = f"at temperature {temperature}" if temperature is not None else "at default temperature"
     thinking_msg = f"with thinking_budget: {thinking_budget}" if thinking_budget is not None else ""
@@ -160,7 +148,7 @@ def execute_gemini(prompt: str, conversation_history: list, model_name: str = "g
 def main():
     """AI router that selects the best model for your task."""
     
-    print("🤖 AI Model Router")
+    print("AI Model Router")
     print("'quit' to end the conversation.")
     print("'clear' to clear conversation history.\n")
     

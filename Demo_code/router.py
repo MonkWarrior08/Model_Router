@@ -33,33 +33,30 @@ def categorize_task(prompt: str) -> dict:
     - "Let's have a casual chat" → conversational_ai
     """
 
-    try:
+
         # Create the model instance
-        model = genai.GenerativeModel('gemini-2.0-flash-lite-preview-02-05')
+    model = genai.GenerativeModel('gemini-2.0-flash-lite-preview-02-05')
         
         # Combine system and user prompt for Gemini
-        full_prompt = f"{system_prompt}\n\nUser prompt: {prompt}"
+    full_prompt = f"{system_prompt}\n\nUser prompt: {prompt}"
         
-        response = model.generate_content(
-            full_prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0,
-                max_output_tokens=50
-            )
+    response = model.generate_content(
+        full_prompt,
+        generation_config=genai.types.GenerationConfig(
+            temperature=0,
+            max_output_tokens=50
         )
+    )
 
-        category = response.text.strip()
+    category = response.text.strip()
         
         # Validate the category
-        if category in PROMPT_CONFIG:
-            return {"category": category, "valid": True}
-        else:
-            print(f"⚠️ Router: Could not classify category '{category}'. Defaulting to 'general_qa'.")
-            return {"category": "general_qa", "valid": False}
+    if category in PROMPT_CONFIG:
+        return {"category": category, "valid": True}
+    else:
+        print(f"⚠️ Router: Could not classify category '{category}'. Defaulting to 'conversational_ai'.")
+        return {"category": "conversational_ai", "valid": False}
             
-    except Exception as e:
-        print(f"🚨 Router Error: {e}. Defaulting to 'general_qa'.")
-        return {"category": "general_qa", "valid": False}
 
 def select_instruction_for_category(category: str, prompt: str) -> str:
     """
@@ -70,15 +67,14 @@ def select_instruction_for_category(category: str, prompt: str) -> str:
     
     prompt_lower = prompt.lower()
     
-    # This logic is kept from the previous version and adapted.
     # It checks for keywords associated with specialized instructions.
     for instruction_type in instruction_set:
         if instruction_type == "default":
             continue
             
         keywords = []
-        if category == "creative_writing" and instruction_type == "storytelling":
-            keywords = ["story", "narrative", "tale", "fiction", "novel", "plot", "character", "world", "dialogue"]
+        if category == "creative_writing" and instruction_type == "poem":
+            keywords = ["poem", "poetry", "verse", "sonnet", "haiku", "rhyme", "stanza", "lyric"]
         elif category == "professional_coding" and instruction_type == "web_development":
             keywords = ["web", "html", "css", "javascript", "frontend", "website", "react", "node", "responsive", "ui", "ux"]
         elif category == "tutor" and instruction_type == "socratic":
@@ -127,7 +123,7 @@ def choose_model(prompt: str) -> dict:
     First categorizes the user request, then selects the instruction, temperature,
     and thinking budget to build the final model configuration.
     """
-    print("🧠 Router: Analyzing prompt to select category and instruction...")
+    print("🧠 Router: Analyzing prompt...")
 
     # 1. Categorize the task
     categorization = categorize_task(prompt)

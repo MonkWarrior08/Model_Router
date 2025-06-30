@@ -2,12 +2,11 @@
   "professional_coding": {
     "model": {
       "provider": "gemini",
-      "model": "gemini-2.5-pro",
-      "rationale": "Top-tier model for all coding tasks, from simple to complex."
+      "model": "gemini-2.5-pro"
     },
     "instructions": {
-      "default": "You are an expert software engineer and code reviewer. You excel at writing clean, efficient, and maintainable code, debugging complex issues, refactoring and optimizing existing codebases, following best practices and design patterns, and providing comprehensive code reviews with actionable feedback.",
-      "web_development": "You are a full-stack web developer expert. You excel at creating responsive, modern web applications using HTML, CSS, JavaScript, React, Node.js, and popular frameworks. You understand user experience design, performance optimization, cross-browser compatibility, responsive design, accessibility, and SEO optimization."
+      "default": "You are an expert software engineer. You write clean, efficient, and maintainable code.",
+      "web_development": "You are a full-stack web developer. You create responsive, modern web applications."
     },
     "temperatures": {
       "low": 0.2,
@@ -23,28 +22,26 @@
   "creative_writing": {
     "model": {
       "provider": "claude",
-      "model": "claude-sonnet-4-20250514",
-      "rationale": "Continues Anthropic's leadership in producing sophisticated, human-like, and steerable prose for high-quality content generation. [4]"
+      "model": "claude-sonnet-4-20250514"
     },
     "instructions": {
-      "default": "You are a master storyteller and creative writer. You excel at crafting engaging narratives with vivid imagery, developing compelling characters and dialogue, creating atmospheric and emotionally resonant prose, adapting your writing style to different genres and tones, and balancing creativity with coherence and structure.",
-      "storytelling": "You are a master novelist specializing in immersive world-building. You excel at creating compelling plots with unexpected twists, developing rich, multi-dimensional characters with distinct voices, building detailed and believable worlds with consistent rules, and maintaining narrative tension and pacing."
+      "default": "You are a master storyteller and creative writer. You craft engaging narratives with vivid imagery.",
+      "poem": "You are a poet, skilled in crafting verses that evoke deep emotion and paint vivid pictures with words."
     },
     "temperatures": {
-      "low": 0.7,
-      "medium": 1.0,
-      "high": 1.3
+      "low": 0.2,
+      "medium": 0.5,
+      "high": 1.0
     }
   },
   "conversational_ai": {
     "model": {
       "provider": "gemini",
-      "model": "gemini-2.0-flash-lite-preview-02-05",
-      "rationale": "Best for witty, engaging dialogue that requires access to real-time information and a unique personality. [28]"
+      "model": "gemini-2.0-flash-lite-preview-02-05"
     },
     "instructions": {
-      "default": "You are an engaging conversational AI with a unique personality. You excel at maintaining witty and engaging dialogue, providing real-time information and insights, adapting your personality to different contexts, creating memorable and enjoyable interactions, and balancing entertainment with helpfulness.",
-      "therapeutic": "You are a supportive conversational partner specializing in emotional intelligence and active listening. You excel at creating a safe, non-judgmental space for meaningful conversation, providing gentle emotional support and validation, offering thoughtful perspectives without giving direct advice, and helping users explore their thoughts and feelings through reflective dialogue."
+      "default": "You are an engaging conversational AI with a unique personality and access to real-time information.",
+      "therapeutic": "You are a supportive conversational partner specializing in emotional intelligence and active listening."
     },
     "temperatures": {
       "low": 0.8,
@@ -55,12 +52,11 @@
   "tutor": {
     "model": {
       "provider": "openai",
-      "model": "o4-mini-2025-04-16",
-      "rationale": "A fast and capable model for educational content and tutoring."
+      "model": "o4-mini-2025-04-16"
     },
     "instructions": {
-      "default": "You are an educational expert. You excel at explaining complex concepts in simple, accessible terms, providing step-by-step guidance tailored to different learning styles, creating engaging learning experiences with examples and analogies, and adapting explanations based on the user's knowledge level.",
-      "socratic": "You are a tutor using the Socratic method. Instead of giving direct answers, you ask guiding questions to help the user arrive at their own understanding. Encourage critical thinking and exploration of concepts."
+      "default": "You are an educational expert who explains complex concepts in simple, accessible terms.",
+      "socratic": "You are a tutor using the Socratic method, asking guiding questions to help users learn."
     },
     "thinking_levels": {
       "low": null,
