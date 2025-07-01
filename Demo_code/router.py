@@ -181,15 +181,11 @@ def choose_model(prompt: str) -> dict:
             
         model_info["temperature"] = selected_temperature
     
-    # 5. Apply thinking budget for Gemini 2.5 models if selected
-    if selected_thinking_level is not None and "2.5" in model_info["model"]:
+    # 5. Apply thinking budget for Gemini 2.5 Pro if selected
+    if selected_thinking_level is not None and model_info["model"] == "gemini-2.5-pro":
         # Only apply if thinking level is an integer (Gemini style)
         if isinstance(selected_thinking_level, int):
-            if model_info["model"] == "gemini-2.5-pro":
-                selected_thinking_level = max(128, min(32768, selected_thinking_level))
-            elif model_info["model"] == "gemini-2.5-flash":
-                selected_thinking_level = max(0, min(24576, selected_thinking_level))
-            
+            selected_thinking_level = max(128, min(32768, selected_thinking_level))
             model_info["thinking_budget"] = selected_thinking_level
     
     # 6. Apply reasoning parameters for OpenAI o-series models if selected
