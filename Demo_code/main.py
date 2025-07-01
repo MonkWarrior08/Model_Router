@@ -23,11 +23,10 @@ genai_client = genai.Client(api_key=google_key)
 
 # --- Model Execution Functions ---
 
-def execute_openai(prompt: str, conversation_history: list, model_name: str, temperature: float = None, reasoning_effort: str = None):
+def execute_openai(prompt: str, conversation_history: list, model_name: str, reasoning_effort: str = None):
     
-    temp_msg = f"at temperature {temperature}" if temperature is not None else "at default temperature"
-    reasoning_msg = f"with reasoning_effort: {reasoning_effort}" if reasoning_effort is not None else ""
-    print(f"\n--- Executing with OpenAI ({model_name}) {temp_msg} {reasoning_msg} ---\n")
+    reasoning_msg = f"with reasoning_effort: {reasoning_effort}" if reasoning_effort is not None else "at default reasoning"
+    print(f"\n--- Executing with OpenAI ({model_name}) {reasoning_msg} ---\n")
     
     try:
         # Build messages with conversation history
@@ -41,11 +40,9 @@ def execute_openai(prompt: str, conversation_history: list, model_name: str, tem
             "messages": messages,
             "stream": True,
         }
-        if temperature is not None:
-            api_params["temperature"] = temperature
         
-        # Add reasoning parameters for o-series models (o4-mini, o3, etc.)
-        if reasoning_effort is not None and ("o4" in model_name or "o3" in model_name or "o1" in model_name):
+        # Add reasoning parameters for o-series models (o4-mini only)
+        if reasoning_effort is not None:
             api_params["reasoning_effort"] = reasoning_effort
 
         response = openai_client.chat.completions.create(**api_params)
@@ -192,28 +189,38 @@ def main():
         # 2. A simple 'factory' to call the correct execution function with the full prompt
         ai_response = ""
         
-        # Prepare parameters that are common to all execution functions
-        params = {
-            "prompt": full_prompt,
-            "conversation_history": conversation_history,
-            "model_name": model_info["model"],
-        }
-        # Add temperature if it's specified for the selected model config
-        if "temperature" in model_info:
-            params["temperature"] = model_info["temperature"]
-        
-        # Add reasoning parameters for OpenAI o-series models
-        if "reasoning_effort" in model_info:
-            params["reasoning_effort"] = model_info["reasoning_effort"]
-
+        # Execute based on provider
         if model_info["provider"] == "openai":
+            # OpenAI o4-mini only supports reasoning_effort, not temperature
+            params = {
+                "prompt": full_prompt,
+                "conversation_history": conversation_history,
+                "model_name": model_info["model"],
+            }
+            if "reasoning_effort" in model_info:
+                params["reasoning_effort"] = model_info["reasoning_effort"]
             ai_response = execute_openai(**params)
         elif model_info["provider"] == "claude":
+            # Claude supports temperature
+            params = {
+                "prompt": full_prompt,
+                "conversation_history": conversation_history,
+                "model_name": model_info["model"],
+            }
+            if "temperature" in model_info:
+                params["temperature"] = model_info["temperature"]
             ai_response = execute_claude(**params)
         elif model_info["provider"] == "gemini":
-            # Add Gemini-specific parameters
+            # Gemini supports both temperature and thinking_budget
+            params = {
+                "prompt": full_prompt,
+                "conversation_history": conversation_history,
+                "model_name": model_info["model"],
+            }
+            if "temperature" in model_info:
+                params["temperature"] = model_info["temperature"]
             if "thinking_budget" in model_info:
-                params["thinking_budget"] = model_info.get("thinking_budget")
+                params["thinking_budget"] = model_info["thinking_budget"]
             ai_response = execute_gemini(**params)
         else:
             print(f"Error: Unknown model provider '{model_info['provider']}'.")
