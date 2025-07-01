@@ -1,16 +1,14 @@
-
 ## Project Overview
 
-Model Router is a Python-based tool that solves a key problem for businesses using AI: how to efficiently and effectively leverage the ever-growing ecosystem of Large Language Models (LLMs).
+Model Router is a Python application that simplifies how organizations interact with AI by dynamically selecting the most suitable Large Language Model (LLM) for each specific task. This eliminates the common dilemma of choosing between cost efficiency and performance when working with multiple AI providers.
 
-Instead of being locked into a single provider or using a powerful, expensive model for every task, this router intelligently analyzes each user request through multiple dimensions:
+The system employs advanced prompt analysis to route requests through a sophisticated decision-making pipeline:
 
-1. **Task Classification**: Categorizes requests into specialized domains (professional coding, creative writing, conversational AI, or tutoring)
-2. **Instruction Selection**: Chooses between default and specialized instructions within each category (e.g., poetry-specific prompts for creative writing, or Socratic method for tutoring)
-3. **Complexity Analysis**: Determines the thinking level (low/medium/high) based on prompt complexity and keywords
-4. **Dynamic Parameter Optimization**: Automatically configures model-specific parameters including temperature, thinking budgets for Gemini 2.5 models, and reasoning effort for OpenAI's o-series models
+1. **Intelligent Task Classification**: Automatically categorizes user requests into specialized domains including professional coding, creative writing, conversational AI, and educational tutoring
+2. **Context-Aware Instruction Selection**: Dynamically chooses between default and specialized instruction sets (e.g., Socratic method for tutoring, poetry-specific prompts for creative writing)
+3. **Sophisticated Complexity Assessment**: Analyzes prompt complexity and keywords to determine optimal thinking levels (low/medium/high) and temperature settings for enhanced reasoning
 
-The router then routes to the optimal model from OpenAI, Anthropic, or Google with precisely tuned parameters to ensure the highest quality output for each specific task type.
+The router intelligently directs requests to the optimal model from OpenAI, Anthropic, or Google, ensuring maximum quality and efficiency for each unique task type while minimizing costs.
 
 ## How to Run and Test the Demo
 
@@ -35,12 +33,6 @@ Run the interactive command-line application:
 python main.py
 ```
 
-Upon launching the application, you enter a continuous conversation mode. When you input your prompt, the router performs the following steps:
-1.  Task categorization: It identifies the most suitable task category for your request.
-2.  Instruction selection: It picks the most fitting instruction tailored to the selected category.
-3.  Model routing: It directs your task to the most optimal model available.
-4.  Response streaming: It displays the model's response directly in the console.
+You can type `clear` to reset the conversation history or `quit` to exit the application.
 
-You can type `clear` to reset the conversation history or `quit` to exit.
-
-*Note on LLM Usage:* I have leveraged Google's Gemini to accelerate aspects on development for writing boilerplate code and generating documentation.
+*Development Note:* This project leverages Google's Gemini models for development acceleration, including code generation and documentation creation.
