@@ -10,11 +10,15 @@ load_dotenv()
 # Gemini Flash 2.0 Flash Lite is a good choice for fast classification tasks.
 genai_client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
-# Load our benchmark data
-with open('model_prompt.json', 'r') as f:
-    PROMPT_CONFIG = json.load(f)
+def load_prompt_config():
+    """Load the prompt configuration from file (allows for dynamic updates)"""
+    with open('model_prompt.json', 'r') as f:
+        return json.load(f)
 
-TASK_CATEGORIES = list(PROMPT_CONFIG.keys())
+def get_task_categories():
+    """Get current task categories"""
+    config = load_prompt_config()
+    return list(config.keys())
 
 def analyze_prompt_with_llm(prompt: str) -> dict:
     """
@@ -23,6 +27,9 @@ def analyze_prompt_with_llm(prompt: str) -> dict:
     2. Instruction type (default or specialized)
     3. Specific temperature and thinking level values based on what's available
     """
+    
+    # Load current configuration
+    PROMPT_CONFIG = load_prompt_config()
     
     # Build available options for each category dynamically
     category_details = {}
@@ -117,13 +124,16 @@ def analyze_prompt_with_llm(prompt: str) -> dict:
             
         result = json.loads(result_text)
         
+        # Load current config for validation
+        current_config = load_prompt_config()
+        
         # Basic validation - use defaults if invalid
         category = result.get("category", "conversational_ai")
-        if category not in PROMPT_CONFIG:
+        if category not in current_config:
             category = "conversational_ai"
             result["category"] = category
         
-        category_config = PROMPT_CONFIG[category]
+        category_config = current_config[category]
         
         # Validate instruction type
         instruction_type = result.get("instruction_type", "default")
@@ -161,6 +171,8 @@ def choose_model(prompt: str) -> dict:
     selected_temperature = analysis["temperature"]
     selected_thinking_level = analysis["thinking_level"]
     
+    # Load current configuration
+    PROMPT_CONFIG = load_prompt_config()
     category_config = PROMPT_CONFIG[category]
     
     # 2. Get the model configuration

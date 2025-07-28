@@ -51,20 +51,16 @@
             font-size: 0.9rem;
         }
         
-        .clear-button {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-        }
+                 .clear-button {
+             background: rgba(255,255,255,0.2);
+             border: none;
+             color: white;
+             padding: 8px 16px;
+             border-radius: 20px;
+             cursor: pointer;
+             font-size: 0.85rem;
+             transition: all 0.3s ease;
+         }
         
         .clear-button:hover {
             background: rgba(255,255,255,0.3);
@@ -255,11 +251,12 @@
                 max-width: 90%;
             }
             
-            .clear-button {
-                position: static;
-                transform: none;
-                margin-top: 10px;
-            }
+                         .header-buttons {
+                 position: static !important;
+                 transform: none !important;
+                 margin-top: 10px;
+                 justify-content: center;
+             }
             
             .chat-header {
                 text-align: center;
@@ -272,7 +269,10 @@
         <div class="chat-header">
             <h1>🤖 AI Model Router</h1>
             <p>Intelligent model selection for every task</p>
-            <button class="clear-button" onclick="clearHistory()">Clear History</button>
+            <div class="header-buttons" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; gap: 10px;">
+                <a href="/config" class="clear-button" style="text-decoration: none;">⚙️ Config</a>
+                <button class="clear-button" onclick="clearHistory()">Clear History</button>
+            </div>
         </div>
         
         <div class="chat-messages" id="chatMessages">

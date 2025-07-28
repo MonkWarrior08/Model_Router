@@ -63,19 +63,5 @@
       "low": "low",
       "medium": "medium"
     }
-  },
-  "cooking": {
-    "model": {
-      "provider": "claude",
-      "model": "claude-sonnet-4-20250514"
-    },
-    "instructions": {
-      "default": "you help with cooking recipes"
-    },
-    "temperatures": {
-      "low": 0.2,
-      "medium": 0.5,
-      "high": 1
-    }
   }
 }

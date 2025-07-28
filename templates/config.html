@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Router - Configuration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .config-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .config-header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .config-header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .nav-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .config-content {
+            padding: 30px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+        
+        .category-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .category-card:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.1);
+        }
+        
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .category-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #374151;
+        }
+        
+        .category-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.75rem;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .model-info {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .model-info h4 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .instructions-section {
+            margin-top: 20px;
+        }
+        
+        .instruction-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .instruction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .instruction-key {
+            font-weight: 600;
+            color: #4f46e5;
+        }
+        
+        .provider-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .provider-openai { background: #10b981; color: white; }
+        .provider-claude { background: #f59e0b; color: white; }
+        .provider-gemini { background: #3b82f6; color: white; }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        @media (max-width: 768px) {
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .config-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="config-container">
+        <div class="config-header">
+            <h1>⚙️ Model Configuration</h1>
+            <div class="nav-buttons">
+                <a href="/" class="nav-button">💬 Back to Chat</a>
+            </div>
+        </div>
+        
+        <div class="config-content">
+            <div id="statusMessage"></div>
+            
+            <div class="action-bar">
+                <div>
+                    <h3>Manage AI Model Categories</h3>
+                    <p>Configure model providers, instructions, and parameters for each task category.</p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="addNewCategory()">+ Add Category</button>
+                    <button class="btn btn-success" onclick="saveConfiguration()">💾 Save Changes</button>
+                    <button class="btn btn-secondary" onclick="loadConfiguration()">🔄 Reload</button>
+                </div>
+            </div>
+            
+            <div id="categoriesContainer" class="categories-grid">
+                <!-- Categories will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Category Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Category</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label class="form-label">Category Name:</label>
+                    <input type="text" id="categoryName" class="form-input" placeholder="e.g., creative_writing">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Model Provider:</label>
+                    <select id="modelProvider" class="form-select" onchange="updateModelOptions()">
+                        <option value="openai">OpenAI</option>
+                        <option value="claude">Anthropic Claude</option>
+                        <option value="gemini">Google Gemini</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Model Name:</label>
+                    <input type="text" id="modelName" class="form-input" placeholder="e.g., claude-sonnet-4-20250514">
+                </div>
+                
+                <div id="advancedOptions">
+                    <!-- Advanced options will be populated based on provider -->
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-success" onclick="saveCategoryModal()">Save Category</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Instruction Modal -->
+    <div id="instructionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="instructionModalTitle">Add Instruction</h2>
+                <span class="close" onclick="closeInstructionModal()">&times;</span>
+            </div>
+            
+            <form id="instructionForm">
+                <div class="form-group">
+                    <label class="form-label">Instruction Key:</label>
+                    <input type="text" id="instructionKey" class="form-input" placeholder="e.g., default, creative, technical">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Instruction Text:</label>
+                    <textarea id="instructionText" class="form-textarea" placeholder="Enter the instruction prompt..."></textarea>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-success" onclick="saveInstructionModal()">Save Instruction</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeInstructionModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentConfig = {};
+        let editingCategory = null;
+        let editingInstruction = null;
+
+        // Load configuration on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfiguration();
+        });
+
+        function loadConfiguration() {
+            fetch('/api/config')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        currentConfig = data.config;
+                        renderCategories();
+                        showStatus('Configuration loaded successfully', 'success');
+                    } else {
+                        showStatus('Error loading configuration: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showStatus('Network error: ' + error.message, 'error');
+                });
+        }
+
+        function saveConfiguration() {
+            fetch('/api/config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(currentConfig)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus('Configuration saved successfully! Backup created.', 'success');
+                } else {
+                    showStatus('Error saving configuration: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showStatus('Network error: ' + error.message, 'error');
+            });
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+
+            for (const [categoryName, categoryData] of Object.entries(currentConfig)) {
+                const categoryCard = createCategoryCard(categoryName, categoryData);
+                container.appendChild(categoryCard);
+            }
+        }
+
+        function createCategoryCard(categoryName, categoryData) {
+            const card = document.createElement('div');
+            card.className = 'category-card';
+            
+            const providerClass = `provider-${categoryData.model.provider}`;
+            
+            let temperatureInfo = '';
+            if (categoryData.temperatures) {
+                const temps = Object.entries(categoryData.temperatures).map(([k, v]) => `${k}: ${v}`).join(', ');
+                temperatureInfo = `<p><strong>Temperatures:</strong> ${temps}</p>`;
+            }
+            
+            let thinkingInfo = '';
+            if (categoryData.thinking_levels) {
+                const levels = Object.entries(categoryData.thinking_levels).map(([k, v]) => `${k}: ${v}`).join(', ');
+                thinkingInfo = `<p><strong>Thinking Levels:</strong> ${levels}</p>`;
+            }
+
+            card.innerHTML = `
+                <div class="category-header">
+                    <div class="category-name">${categoryName}</div>
+                    <div class="category-actions">
+                        <button class="btn btn-primary btn-small" onclick="editCategory('${categoryName}')">Edit</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteCategory('${categoryName}')">Delete</button>
+                    </div>
+                </div>
+                
+                <div class="model-info">
+                    <h4>Model Configuration</h4>
+                    <span class="provider-badge ${providerClass}">${categoryData.model.provider.toUpperCase()}</span>
+                    <p><strong>Model:</strong> ${categoryData.model.model}</p>
+                    ${temperatureInfo}
+                    ${thinkingInfo}
+                </div>
+                
+                <div class="instructions-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4>Instructions</h4>
+                        <button class="btn btn-primary btn-small" onclick="addInstruction('${categoryName}')">+ Add Instruction</button>
+                    </div>
+                    <div id="instructions-${categoryName}">
+                        ${Object.entries(categoryData.instructions).map(([key, value]) => `
+                            <div class="instruction-item">
+                                <div class="instruction-header">
+                                    <span class="instruction-key">${key}</span>
+                                    <div>
+                                        <button class="btn btn-primary btn-small" onclick="editInstruction('${categoryName}', '${key}')">Edit</button>
+                                        <button class="btn btn-danger btn-small" onclick="deleteInstruction('${categoryName}', '${key}')">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="instruction-text">${value}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function addNewCategory() {
+            editingCategory = null;
+            document.getElementById('modalTitle').textContent = 'Add New Category';
+            document.getElementById('categoryName').value = '';
+            document.getElementById('modelProvider').value = 'openai';
+            document.getElementById('modelName').value = '';
+            updateModelOptions();
+            document.getElementById('categoryModal').style.display = 'block';
+        }
+
+        function editCategory(categoryName) {
+            editingCategory = categoryName;
+            const categoryData = currentConfig[categoryName];
+            
+            document.getElementById('modalTitle').textContent = 'Edit Category';
+            document.getElementById('categoryName').value = categoryName;
+            document.getElementById('modelProvider').value = categoryData.model.provider;
+            document.getElementById('modelName').value = categoryData.model.model;
+            updateModelOptions();
+            
+            // Populate advanced options based on current data
+            const provider = categoryData.model.provider;
+            if (provider === 'claude' && categoryData.temperatures) {
+                Object.entries(categoryData.temperatures).forEach(([key, value]) => {
+                    const input = document.getElementById(`temp_${key}`);
+                    if (input) input.value = value;
+                });
+            } else if (provider === 'gemini') {
+                if (categoryData.temperatures) {
+                    Object.entries(categoryData.temperatures).forEach(([key, value]) => {
+                        const input = document.getElementById(`temp_${key}`);
+                        if (input) input.value = value;
+                    });
+                }
+                if (categoryData.thinking_levels) {
+                    Object.entries(categoryData.thinking_levels).forEach(([key, value]) => {
+                        const input = document.getElementById(`thinking_${key}`);
+                        if (input) input.value = value;
+                    });
+                }
+            } else if (provider === 'openai' && categoryData.thinking_levels) {
+                Object.entries(categoryData.thinking_levels).forEach(([key, value]) => {
+                    const select = document.getElementById(`reasoning_${key}`);
+                    if (select) select.value = value;
+                });
+            }
+            
+            document.getElementById('categoryModal').style.display = 'block';
+        }
+
+        function deleteCategory(categoryName) {
+            if (confirm(`Are you sure you want to delete the category "${categoryName}"?`)) {
+                delete currentConfig[categoryName];
+                renderCategories();
+                showStatus(`Category "${categoryName}" deleted`, 'success');
+            }
+        }
+
+        function updateModelOptions() {
+            const provider = document.getElementById('modelProvider').value;
+            const advancedOptions = document.getElementById('advancedOptions');
+            
+            let optionsHTML = '';
+            
+            if (provider === 'claude') {
+                optionsHTML = `
+                    <h4>Temperature Settings</h4>
+                    <div class="form-group">
+                        <label class="form-label">Low Temperature:</label>
+                        <input type="number" id="temp_low" class="form-input" value="0.2" step="0.1" min="0" max="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Medium Temperature:</label>
+                        <input type="number" id="temp_medium" class="form-input" value="0.5" step="0.1" min="0" max="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">High Temperature:</label>
+                        <input type="number" id="temp_high" class="form-input" value="1.0" step="0.1" min="0" max="1">
+                    </div>
+                `;
+            } else if (provider === 'gemini') {
+                optionsHTML = `
+                    <h4>Temperature Settings</h4>
+                    <div class="form-group">
+                        <label class="form-label">Low Temperature:</label>
+                        <input type="number" id="temp_low" class="form-input" value="0.3" step="0.1" min="0" max="2">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Medium Temperature:</label>
+                        <input type="number" id="temp_medium" class="form-input" value="0.6" step="0.1" min="0" max="2">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">High Temperature:</label>
+                        <input type="number" id="temp_high" class="form-input" value="1.0" step="0.1" min="0" max="2">
+                    </div>
+                    <h4>Thinking Budget Settings (for Gemini 2.5 Pro)</h4>
+                    <div class="form-group">
+                        <label class="form-label">Low Thinking:</label>
+                        <input type="number" id="thinking_low" class="form-input" value="128" min="128" max="32768">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Medium Thinking:</label>
+                        <input type="number" id="thinking_medium" class="form-input" value="8192" min="128" max="32768">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">High Thinking:</label>
+                        <input type="number" id="thinking_high" class="form-input" value="24000" min="128" max="32768">
+                    </div>
+                `;
+            } else if (provider === 'openai') {
+                optionsHTML = `
+                    <h4>Reasoning Effort Settings (for o-series models)</h4>
+                    <div class="form-group">
+                        <label class="form-label">Low Reasoning:</label>
+                        <select id="reasoning_low" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Medium Reasoning:</label>
+                        <select id="reasoning_medium" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">High Reasoning:</label>
+                        <select id="reasoning_high" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high" selected>High</option>
+                        </select>
+                    </div>
+                `;
+            }
+            
+            advancedOptions.innerHTML = optionsHTML;
+        }
+
+        function saveCategoryModal() {
+            const categoryName = document.getElementById('categoryName').value.trim();
+            const provider = document.getElementById('modelProvider').value;
+            const modelName = document.getElementById('modelName').value.trim();
+            
+            if (!categoryName || !modelName) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            const categoryData = {
+                model: {
+                    provider: provider,
+                    model: modelName
+                },
+                instructions: editingCategory ? currentConfig[editingCategory].instructions : {
+                    default: "You are a helpful AI assistant."
+                }
+            };
+            
+            // Add provider-specific settings
+            if (provider === 'claude') {
+                categoryData.temperatures = {
+                    low: parseFloat(document.getElementById('temp_low').value),
+                    medium: parseFloat(document.getElementById('temp_medium').value),
+                    high: parseFloat(document.getElementById('temp_high').value)
+                };
+            } else if (provider === 'gemini') {
+                categoryData.temperatures = {
+                    low: parseFloat(document.getElementById('temp_low').value),
+                    medium: parseFloat(document.getElementById('temp_medium').value),
+                    high: parseFloat(document.getElementById('temp_high').value)
+                };
+                categoryData.thinking_levels = {
+                    low: parseInt(document.getElementById('thinking_low').value),
+                    medium: parseInt(document.getElementById('thinking_medium').value),
+                    high: parseInt(document.getElementById('thinking_high').value)
+                };
+            } else if (provider === 'openai') {
+                categoryData.thinking_levels = {
+                    low: document.getElementById('reasoning_low').value,
+                    medium: document.getElementById('reasoning_medium').value,
+                    high: document.getElementById('reasoning_high').value
+                };
+            }
+            
+            // If editing, remove old category if name changed
+            if (editingCategory && editingCategory !== categoryName) {
+                delete currentConfig[editingCategory];
+            }
+            
+            currentConfig[categoryName] = categoryData;
+            renderCategories();
+            closeModal();
+            showStatus(`Category "${categoryName}" saved successfully`, 'success');
+        }
+
+        function addInstruction(categoryName) {
+            editingCategory = categoryName;
+            editingInstruction = null;
+            document.getElementById('instructionModalTitle').textContent = 'Add Instruction';
+            document.getElementById('instructionKey').value = '';
+            document.getElementById('instructionText').value = '';
+            document.getElementById('instructionModal').style.display = 'block';
+        }
+
+        function editInstruction(categoryName, instructionKey) {
+            editingCategory = categoryName;
+            editingInstruction = instructionKey;
+            document.getElementById('instructionModalTitle').textContent = 'Edit Instruction';
+            document.getElementById('instructionKey').value = instructionKey;
+            document.getElementById('instructionText').value = currentConfig[categoryName].instructions[instructionKey];
+            document.getElementById('instructionModal').style.display = 'block';
+        }
+
+        function deleteInstruction(categoryName, instructionKey) {
+            if (confirm(`Are you sure you want to delete the instruction "${instructionKey}"?`)) {
+                delete currentConfig[categoryName].instructions[instructionKey];
+                renderCategories();
+                showStatus(`Instruction "${instructionKey}" deleted`, 'success');
+            }
+        }
+
+        function saveInstructionModal() {
+            const instructionKey = document.getElementById('instructionKey').value.trim();
+            const instructionText = document.getElementById('instructionText').value.trim();
+            
+            if (!instructionKey || !instructionText) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Remove old instruction if key changed
+            if (editingInstruction && editingInstruction !== instructionKey) {
+                delete currentConfig[editingCategory].instructions[editingInstruction];
+            }
+            
+            currentConfig[editingCategory].instructions[instructionKey] = instructionText;
+            renderCategories();
+            closeInstructionModal();
+            showStatus(`Instruction "${instructionKey}" saved successfully`, 'success');
+        }
+
+        function closeModal() {
+            document.getElementById('categoryModal').style.display = 'none';
+        }
+
+        function closeInstructionModal() {
+            document.getElementById('instructionModal').style.display = 'none';
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const categoryModal = document.getElementById('categoryModal');
+            const instructionModal = document.getElementById('instructionModal');
+            
+            if (event.target === categoryModal) {
+                categoryModal.style.display = 'none';
+            }
+            if (event.target === instructionModal) {
+                instructionModal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -14,6 +14,20 @@
       "medium": 0.6
     }
   },
+  "cooking helper": {
+    "model": {
+      "provider": "claude",
+      "model": "claude-sonnet-4-20250514"
+    },
+    "instructions": {
+      "default": "your job is to help with cooking"
+    },
+    "temperatures": {
+      "low": 0.2,
+      "medium": 0.5,
+      "high": 1
+    }
+  },
   "creative_writing": {
     "instructions": {
       "default": "You are a master storyteller and creative writer. You craft engaging narratives with vivid imagery.",
@@ -62,20 +76,6 @@
       "high": "high",
       "low": "low",
       "medium": "medium"
-    }
-  },
-  "cooking": {
-    "model": {
-      "provider": "claude",
-      "model": "claude-sonnet-4-20250514"
-    },
-    "instructions": {
-      "default": "you help with cooking recipes"
-    },
-    "temperatures": {
-      "low": 0.2,
-      "medium": 0.5,
-      "high": 1
     }
   }
 }

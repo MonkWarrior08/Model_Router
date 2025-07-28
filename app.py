@@ -258,6 +258,71 @@ def get_models():
         config = json.load(f)
     return jsonify(config)
 
+@app.route('/api/config', methods=['GET'])
+def get_config():
+    """Get current configuration for editing"""
+    try:
+        with open('model_prompt.json', 'r') as f:
+            config = json.load(f)
+        return jsonify({'status': 'success', 'config': config})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/config', methods=['POST'])
+def update_config():
+    """Update configuration and save to file"""
+    try:
+        new_config = request.json
+        
+        # Validate the configuration structure
+        if not isinstance(new_config, dict):
+            return jsonify({'status': 'error', 'message': 'Invalid configuration format'}), 400
+        
+        # Basic validation for each category
+        for category_name, category_data in new_config.items():
+            if not isinstance(category_data, dict):
+                return jsonify({'status': 'error', 'message': f'Invalid category format: {category_name}'}), 400
+            
+            required_fields = ['model', 'instructions']
+            for field in required_fields:
+                if field not in category_data:
+                    return jsonify({'status': 'error', 'message': f'Missing {field} in category {category_name}'}), 400
+            
+            # Validate model structure
+            model = category_data['model']
+            if not isinstance(model, dict) or 'provider' not in model or 'model' not in model:
+                return jsonify({'status': 'error', 'message': f'Invalid model format in category {category_name}'}), 400
+            
+            # Validate instructions
+            instructions = category_data['instructions']
+            if not isinstance(instructions, dict) or len(instructions) == 0:
+                return jsonify({'status': 'error', 'message': f'Invalid instructions format in category {category_name}'}), 400
+        
+        # Backup current config
+        import datetime
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_filename = f'model_prompt_backup_{timestamp}.json'
+        
+        with open('model_prompt.json', 'r') as f:
+            backup_config = json.load(f)
+        
+        with open(backup_filename, 'w') as f:
+            json.dump(backup_config, f, indent=2)
+        
+        # Save new config
+        with open('model_prompt.json', 'w') as f:
+            json.dump(new_config, f, indent=2)
+        
+        return jsonify({'status': 'success', 'message': f'Configuration updated successfully! Backup saved as {backup_filename}'})
+    
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/config')
+def config_page():
+    """Serve the configuration interface"""
+    return render_template('config.html')
+
 if __name__ == '__main__':
     # Ensure templates directory exists
     os.makedirs('templates', exist_ok=True)
