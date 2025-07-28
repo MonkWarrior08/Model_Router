@@ -75,7 +75,11 @@ def chat():
                     'provider': model_info['provider'],
                     'model': model_info['model'],
                     'category': router_result['category'],
-                    'analysis': router_result['analysis']
+                    'analysis': router_result['analysis'],
+                    'temperature': model_info.get('temperature'),
+                    'thinking_level': router_result.get('thinking_level'),
+                    'reasoning_effort': model_info.get('reasoning_effort'),
+                    'thinking_budget': model_info.get('thinking_budget')
                 }
             }
             yield f"data: {json.dumps(model_selection_data)}\n\n"

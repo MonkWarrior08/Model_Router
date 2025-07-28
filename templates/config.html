@@ -765,56 +765,56 @@
                 if (modelName === 'gemini-2.5-pro') {
                     optionsHTML += `
                         <h4>Thinking Budget Settings</h4>
-                        <div class="form-group">
+                    <div class="form-group">
                             <label class="form-label">Low Thinking Budget:</label>
                             <input type="number" id="thinking_low" class="form-input" value="128" 
                                    step="${limits.thinkingBudget.step}" min="${limits.thinkingBudget.min}" max="${limits.thinkingBudget.max}">
                             <small>Range: ${limits.thinkingBudget.min} - ${limits.thinkingBudget.max} tokens</small>
-                        </div>
-                        <div class="form-group">
+                    </div>
+                    <div class="form-group">
                             <label class="form-label">Medium Thinking Budget:</label>
                             <input type="number" id="thinking_medium" class="form-input" value="8192" 
                                    step="${limits.thinkingBudget.step}" min="${limits.thinkingBudget.min}" max="${limits.thinkingBudget.max}">
-                        </div>
-                        <div class="form-group">
+                    </div>
+                    <div class="form-group">
                             <label class="form-label">High Thinking Budget:</label>
                             <input type="number" id="thinking_high" class="form-input" value="24000" 
                                    step="${limits.thinkingBudget.step}" min="${limits.thinkingBudget.min}" max="${limits.thinkingBudget.max}">
-                        </div>
-                    `;
+                    </div>
+                `;
                 }
             } else if (provider === 'openai') {
                 // Check if it's a reasoning model (o-series)
                 const isReasoningModel = modelsByProvider.openai.reasoning.includes(modelName);
                 
                 if (isReasoningModel) {
-                    optionsHTML = `
+                optionsHTML = `
                         <h4>Reasoning Effort Settings</h4>
-                        <div class="form-group">
-                            <label class="form-label">Low Reasoning:</label>
-                            <select id="reasoning_low" class="form-select">
+                    <div class="form-group">
+                        <label class="form-label">Low Reasoning:</label>
+                        <select id="reasoning_low" class="form-select">
                                 <option value="low" selected>Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Medium Reasoning:</label>
-                            <select id="reasoning_medium" class="form-select">
-                                <option value="low">Low</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="high">High</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">High Reasoning:</label>
-                            <select id="reasoning_high" class="form-select">
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high" selected>High</option>
-                            </select>
-                        </div>
-                    `;
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Medium Reasoning:</label>
+                        <select id="reasoning_medium" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">High Reasoning:</label>
+                        <select id="reasoning_high" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high" selected>High</option>
+                        </select>
+                    </div>
+                `;
                 } else {
                     // For GPT models, show temperature
                     optionsHTML = `
@@ -878,21 +878,21 @@
                 
                 // Add thinking levels for Gemini 2.5 Pro
                 if (modelName === 'gemini-2.5-pro') {
-                    categoryData.thinking_levels = {
-                        low: parseInt(document.getElementById('thinking_low').value),
-                        medium: parseInt(document.getElementById('thinking_medium').value),
-                        high: parseInt(document.getElementById('thinking_high').value)
-                    };
+                categoryData.thinking_levels = {
+                    low: parseInt(document.getElementById('thinking_low').value),
+                    medium: parseInt(document.getElementById('thinking_medium').value),
+                    high: parseInt(document.getElementById('thinking_high').value)
+                };
                 }
             } else if (provider === 'openai') {
                 const isReasoningModel = modelsByProvider.openai.reasoning.includes(modelName);
                 
                 if (isReasoningModel) {
-                    categoryData.thinking_levels = {
-                        low: document.getElementById('reasoning_low').value,
-                        medium: document.getElementById('reasoning_medium').value,
-                        high: document.getElementById('reasoning_high').value
-                    };
+                categoryData.thinking_levels = {
+                    low: document.getElementById('reasoning_low').value,
+                    medium: document.getElementById('reasoning_medium').value,
+                    high: document.getElementById('reasoning_high').value
+                };
                 } else {
                     categoryData.temperatures = {
                         low: parseFloat(document.getElementById('temp_low').value),
