@@ -2,6 +2,9 @@
 
 An intelligent routing system that automatically selects the optimal AI model and configuration for any given task using LLM-powered analysis.
 
+<img width="936" height="930" alt="Screenshot 2025-07-28 at 8 36 08 PM" src="https://github.com/user-attachments/assets/353c4031-3fa9-4270-86f0-3cb3e88bf1e9" />
+<img width="1210" height="984" alt="Screenshot 2025-07-28 at 8 36 22 PM" src="https://github.com/user-attachments/assets/a42ee751-cf20-40cd-b9c9-4a9e3968a1fd" />
+
 ## 🎯 What It Does
 
 The AI Model Router analyzes your prompts and automatically:
