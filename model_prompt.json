@@ -15,18 +15,18 @@
     }
   },
   "creative_writing": {
+    "model": {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash"
+    },
     "instructions": {
       "default": "You are a master storyteller and creative writer. You craft engaging narratives with vivid imagery.",
       "poem": "You are a poet, skilled in crafting verses that evoke deep emotion and paint vivid pictures with words."
     },
-    "model": {
-      "model": "claude-sonnet-4-20250514",
-      "provider": "claude"
-    },
     "temperatures": {
-      "high": 1,
-      "low": 0.2,
-      "medium": 0.5
+      "low": 0.3,
+      "medium": 0.6,
+      "high": 1
     }
   },
   "professional_coding": {

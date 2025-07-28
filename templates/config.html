@@ -376,7 +376,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">Model Name:</label>
-                    <input type="text" id="modelName" class="form-input" placeholder="e.g., claude-sonnet-4-20250514">
+                    <input type="text" id="modelName" class="form-input" placeholder="Select a provider first...">
                 </div>
                 
                 <div id="advancedOptions">
@@ -422,6 +422,42 @@
         let currentConfig = {};
         let editingCategory = null;
         let editingInstruction = null;
+
+        // Updated model lists based on currently working models (to avoid API errors)
+        const modelsByProvider = {
+            openai: {
+                reasoning: [
+                    'o3-mini'
+                ],
+                chat: [
+                    'gpt-4o'
+                ]
+            },
+            claude: [
+                'claude-3-5-sonnet-latest', 'claude-3-7-sonnet-latest'
+            ],
+            gemini: {
+                thinking: [],
+                standard: [
+                    'gemini-2.5-flash', 'gemini-2.0-flash'
+                ]
+            }
+        };
+
+        // Parameter limits by provider
+        const parameterLimits = {
+            openai: {
+                temperature: { min: 0, max: 2, step: 0.1 },
+                reasoningEffort: ['low', 'medium', 'high']
+            },
+            claude: {
+                temperature: { min: 0, max: 1, step: 0.1 }
+            },
+            gemini: {
+                temperature: { min: 0, max: 2, step: 0.1 },
+                thinkingBudget: { min: 128, max: 32768, step: 128 }
+            }
+        };
 
         // Load configuration on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -596,7 +632,91 @@
 
         function updateModelOptions() {
             const provider = document.getElementById('modelProvider').value;
+            const modelNameSelect = document.getElementById('modelName');
             const advancedOptions = document.getElementById('advancedOptions');
+            
+            // Update model dropdown
+            modelNameSelect.innerHTML = '';
+            modelNameSelect.setAttribute('type', 'text'); // Default to text input
+            
+            const models = modelsByProvider[provider];
+            if (models) {
+                // Convert to dropdown
+                const select = document.createElement('select');
+                select.id = 'modelName';
+                select.className = 'form-select';
+                select.onchange = updateAdvancedOptionsVisibility;
+                
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select a model...';
+                select.appendChild(defaultOption);
+                
+                if (provider === 'openai') {
+                    // Group OpenAI models
+                    const reasoningGroup = document.createElement('optgroup');
+                    reasoningGroup.label = 'Reasoning Models (o-series)';
+                    models.reasoning.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        reasoningGroup.appendChild(option);
+                    });
+                    select.appendChild(reasoningGroup);
+                    
+                    const chatGroup = document.createElement('optgroup');
+                    chatGroup.label = 'Chat Models (GPT-series)';
+                    models.chat.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        chatGroup.appendChild(option);
+                    });
+                    select.appendChild(chatGroup);
+                } else if (provider === 'gemini') {
+                    // Group Gemini models
+                    const thinkingGroup = document.createElement('optgroup');
+                    thinkingGroup.label = 'Thinking Models';
+                    models.thinking.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        thinkingGroup.appendChild(option);
+                    });
+                    select.appendChild(thinkingGroup);
+                    
+                    const standardGroup = document.createElement('optgroup');
+                    standardGroup.label = 'Standard Models';
+                    models.standard.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        standardGroup.appendChild(option);
+                    });
+                    select.appendChild(standardGroup);
+                } else {
+                    // Simple list for Claude
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        select.appendChild(option);
+                    });
+                }
+                
+                // Replace the input with select
+                modelNameSelect.parentNode.replaceChild(select, modelNameSelect);
+            }
+            
+            updateAdvancedOptionsVisibility();
+        }
+
+        function updateAdvancedOptionsVisibility() {
+            const provider = document.getElementById('modelProvider').value;
+            const modelName = document.getElementById('modelName').value;
+            const advancedOptions = document.getElementById('advancedOptions');
+            const limits = parameterLimits[provider];
             
             let optionsHTML = '';
             
@@ -605,15 +725,19 @@
                     <h4>Temperature Settings</h4>
                     <div class="form-group">
                         <label class="form-label">Low Temperature:</label>
-                        <input type="number" id="temp_low" class="form-input" value="0.2" step="0.1" min="0" max="1">
+                        <input type="number" id="temp_low" class="form-input" value="0.2" 
+                               step="${limits.temperature.step}" min="${limits.temperature.min}" max="${limits.temperature.max}">
+                        <small>Range: ${limits.temperature.min} - ${limits.temperature.max}</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Medium Temperature:</label>
-                        <input type="number" id="temp_medium" class="form-input" value="0.5" step="0.1" min="0" max="1">
+                        <input type="number" id="temp_medium" class="form-input" value="0.5" 
+                               step="${limits.temperature.step}" min="${limits.temperature.min}" max="${limits.temperature.max}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">High Temperature:</label>
-                        <input type="number" id="temp_high" class="form-input" value="1.0" step="0.1" min="0" max="1">
+                        <input type="number" id="temp_high" class="form-input" value="1.0" 
+                               step="${limits.temperature.step}" min="${limits.temperature.min}" max="${limits.temperature.max}">
                     </div>
                 `;
             } else if (provider === 'gemini') {
@@ -621,58 +745,98 @@
                     <h4>Temperature Settings</h4>
                     <div class="form-group">
                         <label class="form-label">Low Temperature:</label>
-                        <input type="number" id="temp_low" class="form-input" value="0.3" step="0.1" min="0" max="2">
+                        <input type="number" id="temp_low" class="form-input" value="0.3" 
+                               step="${limits.temperature.step}" min="${limits.temperature.min}" max="${limits.temperature.max}">
+                        <small>Range: ${limits.temperature.min} - ${limits.temperature.max}</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Medium Temperature:</label>
-                        <input type="number" id="temp_medium" class="form-input" value="0.6" step="0.1" min="0" max="2">
+                        <input type="number" id="temp_medium" class="form-input" value="0.6" 
+                               step="${limits.temperature.step}" min="${limits.temperature.min}" max="${limits.temperature.max}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">High Temperature:</label>
-                        <input type="number" id="temp_high" class="form-input" value="1.0" step="0.1" min="0" max="2">
-                    </div>
-                    <h4>Thinking Budget Settings (for Gemini 2.5 Pro)</h4>
-                    <div class="form-group">
-                        <label class="form-label">Low Thinking:</label>
-                        <input type="number" id="thinking_low" class="form-input" value="128" min="128" max="32768">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Medium Thinking:</label>
-                        <input type="number" id="thinking_medium" class="form-input" value="8192" min="128" max="32768">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">High Thinking:</label>
-                        <input type="number" id="thinking_high" class="form-input" value="24000" min="128" max="32768">
+                        <input type="number" id="temp_high" class="form-input" value="1.0" 
+                               step="${limits.temperature.step}" min="${limits.temperature.min}" max="${limits.temperature.max}">
                     </div>
                 `;
+                
+                // Add thinking budget for Gemini 2.5 Pro
+                if (modelName === 'gemini-2.5-pro') {
+                    optionsHTML += `
+                        <h4>Thinking Budget Settings</h4>
+                        <div class="form-group">
+                            <label class="form-label">Low Thinking Budget:</label>
+                            <input type="number" id="thinking_low" class="form-input" value="128" 
+                                   step="${limits.thinkingBudget.step}" min="${limits.thinkingBudget.min}" max="${limits.thinkingBudget.max}">
+                            <small>Range: ${limits.thinkingBudget.min} - ${limits.thinkingBudget.max} tokens</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Medium Thinking Budget:</label>
+                            <input type="number" id="thinking_medium" class="form-input" value="8192" 
+                                   step="${limits.thinkingBudget.step}" min="${limits.thinkingBudget.min}" max="${limits.thinkingBudget.max}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">High Thinking Budget:</label>
+                            <input type="number" id="thinking_high" class="form-input" value="24000" 
+                                   step="${limits.thinkingBudget.step}" min="${limits.thinkingBudget.min}" max="${limits.thinkingBudget.max}">
+                        </div>
+                    `;
+                }
             } else if (provider === 'openai') {
-                optionsHTML = `
-                    <h4>Reasoning Effort Settings (for o-series models)</h4>
-                    <div class="form-group">
-                        <label class="form-label">Low Reasoning:</label>
-                        <select id="reasoning_low" class="form-select">
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Medium Reasoning:</label>
-                        <select id="reasoning_medium" class="form-select">
-                            <option value="low">Low</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="high">High</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">High Reasoning:</label>
-                        <select id="reasoning_high" class="form-select">
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high" selected>High</option>
-                        </select>
-                    </div>
-                `;
+                // Check if it's a reasoning model (o-series)
+                const isReasoningModel = modelsByProvider.openai.reasoning.includes(modelName);
+                
+                if (isReasoningModel) {
+                    optionsHTML = `
+                        <h4>Reasoning Effort Settings</h4>
+                        <div class="form-group">
+                            <label class="form-label">Low Reasoning:</label>
+                            <select id="reasoning_low" class="form-select">
+                                <option value="low" selected>Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Medium Reasoning:</label>
+                            <select id="reasoning_medium" class="form-select">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">High Reasoning:</label>
+                            <select id="reasoning_high" class="form-select">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high" selected>High</option>
+                            </select>
+                        </div>
+                    `;
+                } else {
+                    // For GPT models, show temperature
+                    optionsHTML = `
+                        <h4>Temperature Settings</h4>
+                        <div class="form-group">
+                            <label class="form-label">Low Temperature:</label>
+                            <input type="number" id="temp_low" class="form-input" value="0.2" 
+                                   step="${limits.temperature.step}" min="${limits.temperature.min}" max="${limits.temperature.max}">
+                            <small>Range: ${limits.temperature.min} - ${limits.temperature.max}</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Medium Temperature:</label>
+                            <input type="number" id="temp_medium" class="form-input" value="0.7" 
+                                   step="${limits.temperature.step}" min="${limits.temperature.min}" max="${limits.temperature.max}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">High Temperature:</label>
+                            <input type="number" id="temp_high" class="form-input" value="1.5" 
+                                   step="${limits.temperature.step}" min="${limits.temperature.min}" max="${limits.temperature.max}">
+                        </div>
+                    `;
+                }
             }
             
             advancedOptions.innerHTML = optionsHTML;
@@ -711,17 +875,31 @@
                     medium: parseFloat(document.getElementById('temp_medium').value),
                     high: parseFloat(document.getElementById('temp_high').value)
                 };
-                categoryData.thinking_levels = {
-                    low: parseInt(document.getElementById('thinking_low').value),
-                    medium: parseInt(document.getElementById('thinking_medium').value),
-                    high: parseInt(document.getElementById('thinking_high').value)
-                };
+                
+                // Add thinking levels for Gemini 2.5 Pro
+                if (modelName === 'gemini-2.5-pro') {
+                    categoryData.thinking_levels = {
+                        low: parseInt(document.getElementById('thinking_low').value),
+                        medium: parseInt(document.getElementById('thinking_medium').value),
+                        high: parseInt(document.getElementById('thinking_high').value)
+                    };
+                }
             } else if (provider === 'openai') {
-                categoryData.thinking_levels = {
-                    low: document.getElementById('reasoning_low').value,
-                    medium: document.getElementById('reasoning_medium').value,
-                    high: document.getElementById('reasoning_high').value
-                };
+                const isReasoningModel = modelsByProvider.openai.reasoning.includes(modelName);
+                
+                if (isReasoningModel) {
+                    categoryData.thinking_levels = {
+                        low: document.getElementById('reasoning_low').value,
+                        medium: document.getElementById('reasoning_medium').value,
+                        high: document.getElementById('reasoning_high').value
+                    };
+                } else {
+                    categoryData.temperatures = {
+                        low: parseFloat(document.getElementById('temp_low').value),
+                        medium: parseFloat(document.getElementById('temp_medium').value),
+                        high: parseFloat(document.getElementById('temp_high').value)
+                    };
+                }
             }
             
             // If editing, remove old category if name changed
